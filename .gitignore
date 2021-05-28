@@ -1,4 +1,6 @@
 code/*.o
+code/*.lst
+code/*.mod
 code/gem_main
 testcase/*.out
 testcase/*.err
