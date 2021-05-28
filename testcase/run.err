@@ -1,0 +1,41 @@
+At line 1241 of file gem_main.f90
+Fortran runtime error: Index '5' of dimension 1 of array 'rhox' above upper bound of 4
+
+Error termination. Backtrace:
+At line 1241 of file gem_main.f90
+Fortran runtime error: Index '5' of dimension 1 of array 'rhox' above upper bound of 4
+
+Error termination. Backtrace:
+#0  0x7fb62e6742ed in ???
+#1  0x7fb62e674ed5 in ???
+#2  0x7fb62e6752a7 in ???
+#0  0x7fcc3a9f72ed in ???
+#1  0x7fcc3a9f7ed5 in ???
+#2  0x7fcc3a9f82a7 in ???
+#3  0x5563c4bfccd9 in grid1_
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:1241
+#4  0x5563c4c0368e in accumulate_
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:4708
+#5  0x5563c4b56196 in gem_main
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:32
+#6  0x5563c4b56196 in main
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:5
+#3  0x55bf9a9d0cd9 in grid1_
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:1241
+#4  0x55bf9a9d768e in accumulate_
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:4708
+#5  0x55bf9a92a196 in gem_main
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:32
+#6  0x55bf9a92a196 in main
+	at /home/stirkas/Workspace/gemTest/code/gem_main.f90:5
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[49749,1],0]
+  Exit code:    2
+--------------------------------------------------------------------------
