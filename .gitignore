@@ -1,3 +1,14 @@
-**/*.out
-**/*.err
-**/*.o
+code/*.o
+code/gem_main
+testcase/*.out
+testcase/*.err
+
+testcase/dump
+testcase/matrix
+testcase/out
+testcase/eqdat
+testcase/eqflux
+testcase/flux
+testcae/indicator
+testcase/plot
+testcase/yyre

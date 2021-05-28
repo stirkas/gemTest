@@ -1235,7 +1235,7 @@ subroutine grid1(ip,n)
         wght=w3(ns,m)/dv
 
         vpar = u3(ns,m) !linearly correct
-
+   
         !    now do 1,2,4 point average, where lr is the no. of points...
         do l=1,lr(1)
            xs=x3(ns,m)+rhox(l) !rwx(1,l)*rhog
@@ -2661,7 +2661,7 @@ subroutine yveck(u,n)
           tube_comm,ierr)
      call MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
-     do i = 0,4
+     do i = 0,1 !4 - Tirkas
         yyamp(j,i) = abs(tmpz(i)) !cabs
         yyre(j,i) = real(tmpz(i))
         yyim(j,i) = aimag(tmpz(i))
