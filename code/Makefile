@@ -2,7 +2,7 @@ SRCS =	gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_
 
 OBJS =	gem_com.o gem_equil.o gem_main.o gem_outd.o gem_fcnt.o gem_fft_wrapper.o gem_gkps_adi.o
 
-LIBS = ${DFFTPACK_DIR}/libdfftpack.a /usr/lib/x86_64-linux-gnu/lapack/liblapack.so
+LIBS = ${DFFTPACK_DIR}/libdfftpack.a ${LAPACK_DIR}/liblapack.so
 PLIB = gem_pputil.o
 
 F90 = mpif90 #ftn
