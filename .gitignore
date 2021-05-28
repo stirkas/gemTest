@@ -1,16 +1,20 @@
+#Ignore compiled/binary files, etc.
 code/*.o
 code/*.lst
 code/*.mod
 code/gem_main
+testcase/gem_main
+
+#Ignore output files.
 testcase/*.out
 testcase/*.err
-
 testcase/dump
 testcase/matrix
 testcase/out
 testcase/eqdat
 testcase/eqflux
 testcase/flux
-testcae/indicator
+testcase/freq
+testcase/indicator
 testcase/plot
 testcase/yyre

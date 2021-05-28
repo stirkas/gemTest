@@ -7,7 +7,7 @@ PLIB = gem_pputil.o
 
 F90 = mpif90 #ftn
 #OPT = -FR -r8 -heap-arrays -O2 -g -traceback -check bounds
-OPT = -FR -fdefault-real-8 -O2 -ffree-line-length-512 -Wall -fcheck=all -g -fbacktrace
+OPT = -fdefault-real-8 -O2 -g -ffree-line-length-512 -fbacktrace
 LDFLAGS = 
 
 #all : gem
