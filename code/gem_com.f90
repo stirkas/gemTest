@@ -182,7 +182,7 @@ contains
   subroutine new_gem_com()
     nxpp = imx !/ntube
 
-    !tmpz is used to iterate with yyamp,yyre,yyim in yveck, but if kmx-1 < 4 you cant iterate over yyamp, etc.
+    !tmpz is used to copy to yyamp,yyre,yyim in yveck, but if kmx-1 < 4 tmpz is too small and you index out of it.
     if ((kmx-1).gt.4) then
       yyRange = 4
     else
