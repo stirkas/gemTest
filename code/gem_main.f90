@@ -518,8 +518,11 @@ subroutine ppush(n,ns)
   real :: b,th,r,enerb,cost,sint,qr,laps,sz,ter
   real :: xt,xs,yt,xdot,ydot,zdot,pzdot,edot,pzd0,vp0
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
-  real :: grp,gxdgyp,rhox(4),rhoy(4),psp,pzp,vncp,vparspp,psip2p,bdcrvbp,curvbzp,dipdrp
+  real :: grp,gxdgyp,psp,pzp,vncp,vparspp,psip2p,bdcrvbp,curvbzp,dipdrp
   integer :: mynopi
+  real, allocatable :: rhox(:), rhoy(:)
+
+  allocate(rhox(lr(1)), rhoy(lr(1)))
 
   pidum = 1./(pi*2)**1.5*vwidth**3
   mynopi = 0
@@ -2661,7 +2664,8 @@ subroutine yveck(u,n)
           tube_comm,ierr)
      call MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
-     do i = 0,1 !4 - Tirkas
+     
+     do i = 0,yyrange
         yyamp(j,i) = abs(tmpz(i)) !cabs
         yyre(j,i) = real(tmpz(i))
         yyim(j,i) = aimag(tmpz(i))

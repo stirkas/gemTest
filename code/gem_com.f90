@@ -21,7 +21,7 @@ module gem_com
 
   integer :: imx,jmx,kmx,mmx,mmxe,nmx,nsmx,nsubd=8,&
        modemx,ntube,nxpp,ngdx=5,nb=6, &
-       negrd=8,nlgrd=8
+       negrd=8,nlgrd=8,yyrange
 
   character(len=70) outname
   REAL :: endtm,begtm,pstm
@@ -181,17 +181,24 @@ contains
 
   subroutine new_gem_com()
     nxpp = imx !/ntube
+
+    !tmpz is used to iterate with yyamp,yyre,yyim in yveck, but if kmx-1 < 4 you cant iterate over yyamp, etc.
+    if ((kmx-1).gt.4) then
+      yyRange = 4
+    else
+      yyrange = kmx-1
+    endif
+
     allocate(workx(4*imx),worky(4*jmx),workz(4*kmx))
     allocate(tmpx(0:imx-1))
     allocate(tmpy(0:jmx-1))
     allocate(tmpz(0:kmx-1))
-
     allocate(rwx(nsmx,4),rwy(nsmx,4))
     allocate(mm(nsmx),tmm(nsmx),lr(nsmx))
     allocate(tets(nsmx),mims(nsmx),q(nsmx))
     allocate(kapn(nsmx),kapt(nsmx))
     allocate(time(0:nmx))
-    allocate(yyamp(jmx,0:4),yyre(jmx,0:4),yyim(jmx,0:4),camp(0:6,0:50000),campf(0:6,0:nfreq-1))
+    allocate(yyamp(jmx,0:yyrange),yyre(jmx,0:yyrange),yyim(jmx,0:yyrange),camp(0:6,0:50000),campf(0:6,0:nfreq-1))
     allocate(aparhis(0:6,0:jcnt-1),phihis(0:6,0:jcnt-1))
     allocate(mdhis(0:100),mdhisa(0:100),mdhisb(0:100))
     allocate(mdhisc(0:100),mdhisd(0:100))
