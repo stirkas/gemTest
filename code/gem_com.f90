@@ -4,6 +4,7 @@ module gem_com
 
   use mpi
   use gem_pputil
+  use iso_c_binding
 
   implicit none
 
@@ -19,9 +20,9 @@ module gem_com
      end function en3
   END INTERFACE
 
-  integer :: imx,jmx,kmx,mmx,mmxe,nmx,nsmx,nsubd=8,&
+  integer, bind(c) :: imx,jmx,kmx,mmx,mmxe,nmx,nsmx,nsubd=8,&
        modemx,ntube,nxpp,ngdx=5,nb=6, &
-       negrd=8,nlgrd=8,yyrange
+       negrd=8,nlgrd=8
 
   character(len=70) outname
   REAL :: endtm,begtm,pstm
@@ -50,14 +51,14 @@ module gem_com
   REAL,dimension(:),allocatable :: kapn, kapt
   INTEGER :: timestep,im,jm,km,mykm,iseed,nrst,nfreq,isft,mynf,ifskp,iphbf,iapbf,idpbf
   real,dimension(:),allocatable :: time
-  REAL :: dx,dy,dz,pi,pi2,dt,dte,totvol,n0,n0e,tcurr,rmpp,rmaa,eprs
+  REAL, bind(c):: dx,dy,dz,pi,pi2,dt,dte,totvol,n0,n0e,tcurr,rmpp,rmaa,eprs
   REAL :: lx,ly,lz,xshape,yshape,zshape,pzcrit(5),pzcrite,encrit,tot_field_e,tot_joule,tot_joule1
-  INTEGER :: nm,nsm,kcnt,jcnt,ncurr,llk,mlk,onemd,iflr,iorb
+  INTEGER, bind(C) :: nm,nsm,kcnt,jcnt,ncurr,llk,mlk,onemd,iflr,iorb
   integer :: izonal,adiabatic_electron,ineq0,iflut,nlow,ntor0,mstart
   REAL :: cut,amp,tor,amie,isg,rneu,rneui,emass,qel,mbeam,qbeam,teth,vexbsw,vparsw
   REAL :: c4,fradi,kxcut,kycut,bcut,ftrap,adwn,adwe,adwp,frmax
   INTEGER :: iput,iget,idg,kzlook,ision,isiap,peritr,iadi,ipred,icorr,jpred,jcorr
-  REAL,DIMENSION(:,:),allocatable :: yyamp,yyre,yyim
+  REAL,target, DIMENSION(:,:),allocatable :: yyamp,yyre,yyim
   complex,dimension(:,:),allocatable :: camp,campf
   REAL :: br0,lr0,qp,width,e0,vwidth,vwidthe,vcut,vpp,vt0,yd0
   integer :: nonlin(5),nonline,ipara,isuni,ifluid,ishift,nopz,nopi(5),noen,nowe
@@ -96,7 +97,7 @@ module gem_com
   real,dimension(:,:,:),allocatable :: upar,upart,delte
   real,dimension(:,:,:),allocatable :: upex,upey,upa0,den0,upazd,upa00,upa0t,den0apa
   real,dimension(:,:),allocatable :: cfx,cfy,jac,bmag,bdgxcgy,bdgrzn,ggxdgy,ggy2,ggx
-  real,dimension(:),allocatable :: gn0e,gt0e,gt0i,avap 
+  real,target, dimension(:),allocatable :: gn0e,gt0e,gt0i,avap 
   real,dimension(:,:),allocatable :: gn0s
 
   !          particle array declarations
@@ -122,13 +123,13 @@ module gem_com
 
   REAL,DIMENSION(:,:),allocatable :: ke
   REAL,DIMENSION(:),allocatable :: fe,te
-  REAL,DIMENSION(:),allocatable :: rmsphi,rmsapa,avewe
-  REAL,DIMENSION(:,:),allocatable :: nos,avewi
+  REAL,target, DIMENSION(:),allocatable :: rmsphi,rmsapa,avewe
+  REAL,target, DIMENSION(:,:),allocatable :: nos,avewi
 
   !    flux diagnostics
-  REAL,DIMENSION(:),allocatable :: vol
-  REAL,DIMENSION(:,:),allocatable :: efle_es,efle_em,pfle_es,pfle_em
-  REAL,DIMENSION(:,:,:),allocatable :: pfl_es,pfl_em,efl_es,efl_em
+  REAL,target, DIMENSION(:),allocatable :: vol
+  REAL,target, DIMENSION(:,:),allocatable :: efle_es,efle_em,pfle_es,pfle_em
+  REAL,target, DIMENSION(:,:,:),allocatable :: pfl_es,pfl_em,efl_es,efl_em
   REAL,DIMENSION(:,:),allocatable :: chii, chie, ddi
   REAL,DIMENSION(:),allocatable :: achii, achie, addi
 
@@ -136,8 +137,8 @@ module gem_com
   INTEGER :: modem
   INTEGER,dimension(:),allocatable :: lmode,mmode,nmode
   complex,dimension(:,:),allocatable :: pmodehis
-  real,dimension(:),allocatable :: mdhis,mdhisa,mdhisb,mdhisc,mdhisd
-  complex,dimension(:,:),allocatable :: aparhis,phihis
+  real,target, dimension(:),allocatable :: mdhis,mdhisa,mdhisb,mdhisc,mdhisd
+  complex,target, dimension(:,:),allocatable :: aparhis,phihis
 
   !   kr, ktheta spectrum plots
   REAL,DIMENSION(:,:),allocatable :: phik
@@ -158,11 +159,11 @@ module gem_com
   !      MPI variables
   !  include '/usr/include/mpif.h'
 
-  integer,parameter :: Master=0
+  integer, bind(c) :: Master=0!,parameter
   integer :: numprocs
-  INTEGER :: MyId,Last,cnt,ierr
+  INTEGER, bind(c):: MyId,Last,cnt,ierr
   INTEGER :: GRID_COMM,TUBE_COMM
-  INTEGER :: GCLR,TCLR,GLST,TLST
+  INTEGER, bind(c) :: GCLR,TCLR,GLST,TLST
   INTEGER :: stat(MPI_STATUS_SIZE)
   INTEGER :: lngbr,rngbr,idprv,idnxt
 
@@ -177,28 +178,33 @@ module gem_com
   !real :: amod
   save
 
+  !this is the pointer definition for ()
+  type(c_ptr), bind(c) :: vol_ptr,rmsapa_ptr,rmsphi_ptr,avewe_ptr,mdhis_ptr,mdhisa_ptr
+  type(c_ptr), bind(c) :: mdhisb_ptr,mdhisc_ptr,mdhisd_ptr
+  
+  type(c_ptr), bind(c) :: pfle_es_ptr,avewi_ptr,efle_es_ptr,yyre_ptr,yyim_ptr
+  type(c_ptr), bind(c) :: yyamp_ptr, efle_em_ptr, pfle_em_ptr
+
+  type(c_ptr), bind(c) :: phihis_ptr,aparhis_ptr
+
+  type(c_ptr), bind(c) :: pfl_es_ptr, efl_es_ptr, efl_em_ptr, pfl_em_ptr
+
+
 contains
 
   subroutine new_gem_com()
     nxpp = imx !/ntube
-
-    !tmpz is used to copy to yyamp,yyre,yyim in yveck, but if kmx-1 < 4 tmpz is too small and you index out of it.
-    if ((kmx-1).gt.4) then
-      yyRange = 4
-    else
-      yyrange = kmx-1
-    endif
-
     allocate(workx(4*imx),worky(4*jmx),workz(4*kmx))
     allocate(tmpx(0:imx-1))
     allocate(tmpy(0:jmx-1))
     allocate(tmpz(0:kmx-1))
+
     allocate(rwx(nsmx,4),rwy(nsmx,4))
     allocate(mm(nsmx),tmm(nsmx),lr(nsmx))
     allocate(tets(nsmx),mims(nsmx),q(nsmx))
     allocate(kapn(nsmx),kapt(nsmx))
     allocate(time(0:nmx))
-    allocate(yyamp(jmx,0:yyrange),yyre(jmx,0:yyrange),yyim(jmx,0:yyrange),camp(0:6,0:50000),campf(0:6,0:nfreq-1))
+    allocate(yyamp(jmx,0:4),yyre(jmx,0:4),yyim(jmx,0:4),camp(0:6,0:50000),campf(0:6,0:nfreq-1))
     allocate(aparhis(0:6,0:jcnt-1),phihis(0:6,0:jcnt-1))
     allocate(mdhis(0:100),mdhisa(0:100),mdhisb(0:100))
     allocate(mdhisc(0:100),mdhisd(0:100))
@@ -282,6 +288,39 @@ contains
     ALLOCATE(pol(1:nb,0:imx-1,0:jmx-1,0:kmx),pfac(0:imx-1,0:jmx-1), &
          pmtrx(0:imx-1,0:jmx-1,1:nb,1:nb), &
          pmtrxi(0:imx-1,0:jmx-1,1:nb,1:nb))
+
+     !spec 1d arrays
+     vol_ptr = c_loc(vol(1))
+     rmsapa_ptr = c_loc(rmsapa(1))
+     rmsphi_ptr = c_loc(rmsphi(1))
+     avewe_ptr = c_loc(avewe(1))
+     mdhis_ptr = c_loc(mdhis(1))
+     mdhisa_ptr = c_loc(mdhisa(1))
+     mdhisb_ptr = c_loc(mdhisb(1))
+     mdhisc_ptr = c_loc(mdhisc(1))
+     mdhisd_ptr = c_loc(mdhisd(1))
+
+     !spec 2d arrays
+     pfle_es_ptr = c_loc(pfle_es(1,1))
+     avewi_ptr = c_loc(avewi(1,1))
+     efle_es_ptr = c_loc(efle_es(1,1))
+     yyre_ptr = c_loc(yyre(1,1))
+     yyim_ptr = c_loc(yyim(1,1))
+     yyamp_ptr = c_loc(yyamp(1,1))
+     phihis_ptr = c_loc(phihis(1,1))
+     aparhis_ptr = c_loc(aparhis(1,1))
+     efle_em_ptr = c_loc(efle_em(1,1))
+     pfle_em_ptr = c_loc(pfle_em(1,1))
+
+     !spec 3d arrays
+     pfl_es_ptr = c_loc(pfl_es(1,1,1))
+     efl_es_ptr = c_loc(efl_es(1,1,1))
+     efl_em_ptr = c_loc(efl_em(1,1,1))
+     pfl_em_ptr = c_loc(pfl_em(1,1,1))
+
+
+
+     call new_gem_com_c()
 
   end subroutine new_gem_com
 

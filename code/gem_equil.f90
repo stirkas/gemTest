@@ -1,22 +1,23 @@
 MODULE gem_equil
+   use iso_c_binding
   IMPLICIT NONE
   integer :: itube,ibase,iperi,iperidf,ibunit,icandy=1,isprime=0,ildu=0,eldu=0
-  real :: mimp=2,mcmp=12,chgi=1,chgc=6
+  real, bind(c) :: mimp=2,mcmp=12,chgi=1,chgc=6
   real :: elon0=1.0,tria0=0.0,rmaj0=500.0,r0,a=180.0,selon0=0.0,&
              stria0=0.0,rmaj0p=-0.0,q0p=0.006,q0=1.4, elonp0=0.,triap0=0.,erp=0.01,er0=0.,q0abs
-  real :: beta,Rovera,shat0,teti,tcti,rhoia,Rovlni,Rovlti,Rovlne,Rovlte,Rovlnc,Rovltc,ncne,nuacs
+  real, bind(c) :: beta,Rovera,shat0,teti,tcti,rhoia,Rovlni,Rovlti,Rovlne,Rovlte,Rovlnc,Rovltc,ncne,nuacs
   real :: gamma_E,mach
   real :: f0, f0p,bunit
   real :: rin,rout,dr,dth,delz,jacmax,eadj
-  real :: cn0e,cn0i,cn0b,cn0c,n0emax,n0imax,n0bmax,n0cmax
+  real,bind(c):: cn0e,cn0i,cn0b,cn0c,n0emax,n0imax,n0bmax,n0cmax
   real :: r0a,lxa,lymult,delra,delri,delre,delrn,rina,routa,betai, &
                tir0,xnir0,xu,frequ,vu,eru
 
-  integer :: nr=256,nr2=150,ntheta=100,idiag=0
+  integer, bind(c) :: nr=256,nr2=150,ntheta=100,idiag=0
   real,dimension(:,:),allocatable :: bfld,qhat,radius,gr,gth,grdgt,grcgt, &
                                         gxdgy,dydr,dbdr,dbdth,dqhdr,jacob, &
                                         yfn,hght,thflx
-  real,dimension(:),allocatable :: rmaj,rmajp,elon,selon,tria,stria, psi,&
+  real,target,dimension(:),allocatable:: rmaj,rmajp,elon,selon,tria,stria, psi,&
                                       f,psip,sf,jacoba,jfn,zfnth,thfnz,&
                                       t0i,t0e,t0b,t0c,t0ip,t0ep,t0bp,t0cp,&
                                       xn0i,xn0e,xn0c,xn0b,xn0ip,xn0ep,xn0bp,&
@@ -31,6 +32,8 @@ MODULE gem_equil
                                       dldr,dldt,drhdr,drhdt,dbdl,dbdrho, &
                                       db2dl,db2drho,dbpsdl,dipdr, &
                                       rdtemp
+  type(c_ptr), bind(C) :: xn0e_ptr, t0e_ptr
+
 !for Miller local flux-tube
   real :: candyf0p
   real,dimension(:),allocatable :: candyd0,candyd1,candyd2,candynus,candynu1,candydr
@@ -46,8 +49,9 @@ MODULE gem_equil
 !  real,external :: erf
 
 contains
+
   subroutine new_equil()
-      
+
       real :: pi,r,th,s,ss,c1,c2,lti,s0,s1,delsi,lte,delse,ln,deln
       parameter(c1=0.43236,c2=2.33528,lti=144.9,s1=0.5,delsi=0.6, &
                 lte=144.9,delse=0.6,deln=0.6,ln=454.5)
@@ -697,6 +701,10 @@ contains
       psip2=0
       
       rdtemp=0
+
+      xn0e_ptr = c_loc(xn0e(0))
+      t0e_ptr  = c_loc(t0e(0))
+      call new_gem_equil_c()
 
   end subroutine new_equil
 
