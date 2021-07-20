@@ -5,8 +5,32 @@ program gem_main
   use gem_com
   use gem_equil
   use gem_fft_wrapper
+  use iso_c_binding
 
   implicit none
+
+  interface
+    subroutine srcbes(cbiz,cgam0,cgam1) bind(c)
+      use iso_c_binding
+      real (c_double) :: cbiz,cgam0,cgam1
+    end subroutine srcbes
+
+    subroutine spec_c(n) bind(C)
+      use iso_c_binding
+      integer(c_int) :: n
+    end subroutine spec_c
+
+    !TODO: Move into the right modules.
+    subroutine new_gem_com_c() bind(c)
+       use iso_c_binding
+    end subroutine new_gem_com_c
+
+    subroutine new_gem_equil_c() bind(c)
+     use iso_c_binding
+    end subroutine new_gem_equil_c
+
+   end interface
+  
   integer :: n,i,j,k,ip
 
   call initialize
@@ -64,7 +88,8 @@ program gem_main
   end do
 
 100 call MPI_FINALIZE(ierr)
-
+stop
+!end
 end program gem_main
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -518,11 +543,8 @@ subroutine ppush(n,ns)
   real :: b,th,r,enerb,cost,sint,qr,laps,sz,ter
   real :: xt,xs,yt,xdot,ydot,zdot,pzdot,edot,pzd0,vp0
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
-  real :: grp,gxdgyp,psp,pzp,vncp,vparspp,psip2p,bdcrvbp,curvbzp,dipdrp
+  real :: grp,gxdgyp,rhox(4),rhoy(4),psp,pzp,vncp,vparspp,psip2p,bdcrvbp,curvbzp,dipdrp
   integer :: mynopi
-  real, allocatable :: rhox(:), rhoy(:)
-
-  allocate(rhox(lr(1)), rhoy(lr(1)))
 
   pidum = 1./(pi*2)**1.5*vwidth**3
   mynopi = 0
@@ -1995,119 +2017,122 @@ subroutine eqmo(ip)
 end subroutine eqmo
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-subroutine spec(n)
-  use gem_com
-  use gem_equil
-  implicit none
-  integer :: i,j,k,l,m,n
-  real :: pf,efe,efi,pfi,efc,pfc,efb,pfb,pflxgb,eflxgb,x
-  real :: pf_em,efe_em,efi_em,pfi_em,efc_em,pfc_em,efb_em,pfb_em
-  real :: tdum,v(0:imx)
 
-!  call zon(upart+amie*upa0t,v)
-!  call joule
 
-  eflxgb = xn0e(nr2)*cn0e*t0e(nr2)*sqrt(t0e(nr2)/mimp)*rhoia**2
-  pflxgb = eflxgb/t0e(nr2)
-  i = tcurr-dt
-  pf = 0.
-  efe = 0.
-  efi = 0.
-  pfi = 0.
-  efc = 0.
-  pfc = 0.
-  efb = 0.
-  pfb = 0.
+!subroutine spec(n)
+!  use gem_com
+!  use gem_equil
+!  implicit none
+!  integer :: i,j,k,l,m,n
+!  real :: pf,efe,efi,pfi,efc,pfc,efb,pfb,pflxgb,eflxgb,x
+!  real :: pf_em,efe_em,efi_em,pfi_em,efc_em,pfc_em,efb_em,pfb_em
+!  real :: tdum,v(0:imx)
+!
+!  !call zon(upart+amie*upa0t,v)
+!  !call joule
+!
+!  eflxgb = xn0e(nr2)*cn0e*t0e(nr2)*sqrt(t0e(nr2)/mimp)*rhoia**2
+!  pflxgb = eflxgb/t0e(nr2)
+!  i = tcurr-dt
+!  pf = 0.
+!  efe = 0.
+!  efi = 0.
+!  pfi = 0.
+!  efc = 0.
+!  pfc = 0.
+!  efb = 0.
+!  pfb = 0.
+!
+!  pf_em = 0.
+!  efe_em = 0.
+!  efi_em = 0.
+!  pfi_em = 0.
+!  efc_em = 0.
+!  pfc_em = 0.
+!  efb_em = 0.
+!  pfb_em = 0.
+!  k = 2
+!  x = float(nsubd)/float(nsubd-2*k)
+!  do j = 1+k,nsubd-k
+!     pf = pf+pfle_es(j,n)*vol(j)/totvol*x
+!     efe = efe+efle_es(j,n)*vol(j)/totvol*x
+!     efi = efi+efl_es(1,j,n)*vol(j)/totvol*x
+!     pfi = pfi+pfl_es(1,j,n)*vol(j)/totvol*x
+!     efc = efc+efl_es(2,j,n)*vol(j)/totvol*x
+!     pfc = pfc+pfl_es(2,j,n)*vol(j)/totvol*x
+!     efb = efb+efl_es(3,j,n)*vol(j)/totvol*x
+!     pfb = pfb+pfl_es(3,j,n)*vol(j)/totvol*x
+!  end do
+!
+!  do j = 1+k,nsubd-k
+!     pf_em = pf_em+pfle_em(j,n)*vol(j)/totvol*x
+!     efe_em = efe_em+efle_em(j,n)*vol(j)/totvol*x
+!     efi_em = efi_em+efl_em(1,j,n)*vol(j)/totvol*x
+!     pfi_em = pfi_em+pfl_em(1,j,n)*vol(j)/totvol*x
+!     efc_em = efc_em+efl_em(2,j,n)*vol(j)/totvol*x
+!     pfc_em = pfc_em+pfl_em(2,j,n)*vol(j)/totvol*x
+!     efb_em = efb_em+efl_em(3,j,n)*vol(j)/totvol*x
+!     pfb_em = pfb_em+pfl_em(3,j,n)*vol(j)/totvol*x
+!  end do
+!
 
-  pf_em = 0.
-  efe_em = 0.
-  efi_em = 0.
-  pfi_em = 0.
-  efc_em = 0.
-  pfc_em = 0.
-  efb_em = 0.
-  pfb_em = 0.
-  k = 2
-  x = float(nsubd)/float(nsubd-2*k)
-  do j = 1+k,nsubd-k
-     pf = pf+pfle_es(j,n)*vol(j)/totvol*x
-     efe = efe+efle_es(j,n)*vol(j)/totvol*x
-     efi = efi+efl_es(1,j,n)*vol(j)/totvol*x
-     pfi = pfi+pfl_es(1,j,n)*vol(j)/totvol*x
-     efc = efc+efl_es(2,j,n)*vol(j)/totvol*x
-     pfc = pfc+pfl_es(2,j,n)*vol(j)/totvol*x
-     efb = efb+efl_es(3,j,n)*vol(j)/totvol*x
-     pfb = pfb+pfl_es(3,j,n)*vol(j)/totvol*x
-  end do
-
-  do j = 1+k,nsubd-k
-     pf_em = pf_em+pfle_em(j,n)*vol(j)/totvol*x
-     efe_em = efe_em+efle_em(j,n)*vol(j)/totvol*x
-     efi_em = efi_em+efl_em(1,j,n)*vol(j)/totvol*x
-     pfi_em = pfi_em+pfl_em(1,j,n)*vol(j)/totvol*x
-     efc_em = efc_em+efl_em(2,j,n)*vol(j)/totvol*x
-     pfc_em = pfc_em+pfl_em(2,j,n)*vol(j)/totvol*x
-     efb_em = efb_em+efl_em(3,j,n)*vol(j)/totvol*x
-     pfb_em = pfb_em+pfl_em(3,j,n)*vol(j)/totvol*x
-  end do
-
-  tdum = tcurr-dt
-  if(myid.eq.master)then
-     open(9, file='plot', status='unknown',position='append')
-     open(11, file='flux', status='unknown',position='append')
-     open(17, file='yyre', status='unknown',position='append')
-
-     write(*,10)i,rmsphi(n),rmsapa(n),pf,efe,pfi,efi,avewi(1,n),&
-          avewe(n),yyre(1,0),yyim(1,0),yyamp(1,0)
-
-10   format(1x,i6,12(2x,e10.3))
-11   format(6x,5(2x,e12.5))
-12   format(1x,i6,12(2x,e12.5))
-13   format(1x,i6,4(2x,e10.3),2x,i7,2x,i7)
-15   format(1x,i6,8(2x,e10.3))
-
-     write(9,10)i,rmsphi(n),rmsapa(n),pf,efe,pfi,efi,avewi(1,n),&
-          avewe(n),yyre(1,0),yyim(1,0),yyamp(1,0)
-
-     write(11,12)i,pf/pflxgb,pfi/pflxgb,pfc/pflxgb,efe/eflxgb,efi/eflxgb,&
-          efc/eflxgb,pf_em/pflxgb,pfi_em/pflxgb,pfc_em/pflxgb,efe_em/eflxgb,&
-          efi_em/eflxgb,efc_em/eflxgb
-
-     write(17,12)i,yyre(1,0),yyre(1,1),yyre(1,2),yyre(1,3),yyre(1,4)
-     close(9)
-     close(11)
-     close(17)
-  end if
-
-  return
-  if(gclr==kmx/2 .and. tclr==0)then
-     open(22, file='yyre2', status='unknown',position='append')
-     open(23, file='mdhis', status='unknown',position='append')
-     open(24, file='mdhisa', status='unknown',position='append')
-     open(25, file='stress', status='unknown',position='append')
-
-     write(23,16)tdum,mdhis(0),mdhis(1),mdhis(2),mdhis(3),mdhis(4),&
-          mdhisa(0),mdhisa(1),mdhisa(2),mdhisa(3),mdhisa(4)
-     write(24,16)tdum,mdhisb(0),mdhisb(1),mdhisc(0),mdhisc(1),&
-          mdhisd(0),mdhisd(1)
-     write(25,17)tdum,(v(i),i = 0,imx-1)
-
-     do  i = 0,6
-        write(22,14)tdum,i,real(phihis(i,0)),(real(phihis(i,j)), &
-             aimag(phihis(i,j)), j = 1,jcnt-2,2)
-        write(22,14)tdum,i,real(aparhis(i,0)),(real(aparhis(i,j)), &
-             aimag(aparhis(i,j)), j = 1,jcnt-2,2)
-     end do
-     close(22)
-     close(23)
-     close(24)
-     close(25)
-14   format(1x,f10.1,1x,i2,10(2x,e12.5))
-16   format(1x,f10.1,1x,10(2x,e12.5))
-17   format(1x,f10.1,256(2x,e12.5))
-  end if
-
-end subroutine spec
+!  tdum = tcurr-dt
+!  if(myid.eq.master)then
+!     open(9, file='plot', status='unknown',position='append')
+!     open(11, file='flux', status='unknown',position='append')
+!     open(17, file='yyre', status='unknown',position='append')
+!
+!     write(*,10)i,rmsphi(n),rmsapa(n),pf,efe,pfi,efi,avewi(1,n),&
+!          avewe(n),yyre(1,0),yyim(1,0),yyamp(1,0)
+!
+!10   format(1x,i6,12(2x,e17.10))
+!11   format(6x,5(2x,e12.5))
+!12   format(1x,i6,12(2x,e12.5))
+!13   format(1x,i6,4(2x,e17.10),2x,i7,2x,i7)
+!15   format(1x,i6,8(2x,e17.10))
+!
+!     write(9,10)i,rmsphi(n),rmsapa(n),pf,efe,pfi,efi,avewi(1,n),&
+!          avewe(n),yyre(1,0),yyim(1,0),yyamp(1,0)
+!
+!     write(11,12)i,pf/pflxgb,pfi/pflxgb,pfc/pflxgb,efe/eflxgb,efi/eflxgb,&
+!          efc/eflxgb,pf_em/pflxgb,pfi_em/pflxgb,pfc_em/pflxgb,efe_em/eflxgb,&
+!          efi_em/eflxgb,efc_em/eflxgb
+!
+!     write(17,12)i,yyre(1,0),yyre(1,1),yyre(1,2),yyre(1,3),yyre(1,4)
+!     close(9)
+!     close(11)
+!     close(17)
+!  end if
+!
+!! return
+! ! if(gclr==kmx/2 .and. tclr==0)then
+! !    open(22, file='yyre2', status='unknown',position='append')
+! !    open(23, file='mdhis', status='unknown',position='append')
+! !    open(24, file='mdhisa', status='unknown',position='append')
+! !    open(25, file='stress', status='unknown',position='append')
+!!
+! !    write(23,16)tdum,mdhis(0),mdhis(1),mdhis(2),mdhis(3),mdhis(4),&
+! !         mdhisa(0),mdhisa(1),mdhisa(2),mdhisa(3),mdhisa(4)
+! !    write(24,16)tdum,mdhisb(0),mdhisb(1),mdhisc(0),mdhisc(1),&
+! !         mdhisd(0),mdhisd(1)
+! !    write(25,17)tdum,(v(i),i = 0,imx-1)
+!!
+! !    do  i = 0,6
+! !       write(22,14)tdum,i,real(phihis(i,0)),(real(phihis(i,j)), &
+! !            aimag(phihis(i,j)), j = 1,jcnt-2,2)
+! !       write(22,14)tdum,i,real(aparhis(i,0)),(real(aparhis(i,j)), &
+! !            aimag(aparhis(i,j)), j = 1,jcnt-2,2)
+! !    end do
+! !    close(22)
+!!    close(23)
+!!    close(24)
+!!    close(25)
+!!14   format(1x,f10.1,1x,i2,10(2x,e12.5))
+!!16   format(1x,f10.1,1x,10(2x,e12.5))
+!!17   format(1x,f10.1,256(2x,e12.5))
+!! end if
+!
+!end subroutine spec
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 subroutine ezamp(nstep,ip)   
@@ -2664,8 +2689,7 @@ subroutine yveck(u,n)
           tube_comm,ierr)
      call MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
-     
-     do i = 0,yyrange
+     do i = 0,1 !4 - Tirkas
         yyamp(j,i) = abs(tmpz(i)) !cabs
         yyre(j,i) = real(tmpz(i))
         yyim(j,i) = aimag(tmpz(i))
@@ -5006,7 +5030,7 @@ subroutine reporter(n)
   integer :: n,i,j,k,ip
 
   if(mod(n,xnplt).eq.0) then
-     call spec(n)
+     call spec_c(n)
   endif
 13 format(1x,i6,7(2x,i7))
   if(myid.eq.master)then
