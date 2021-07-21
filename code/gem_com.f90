@@ -291,32 +291,32 @@ contains
 
      !spec 1d arrays
      vol_ptr = c_loc(vol(1))
-     rmsapa_ptr = c_loc(rmsapa(1))
-     rmsphi_ptr = c_loc(rmsphi(1))
-     avewe_ptr = c_loc(avewe(1))
-     mdhis_ptr = c_loc(mdhis(1))
+     rmsapa_ptr = c_loc(rmsapa(0))
+     rmsphi_ptr = c_loc(rmsphi(0))
+     avewe_ptr = c_loc(avewe(0))
+     mdhis_ptr = c_loc(mdhis(0))
      mdhisa_ptr = c_loc(mdhisa(1))
      mdhisb_ptr = c_loc(mdhisb(1))
      mdhisc_ptr = c_loc(mdhisc(1))
      mdhisd_ptr = c_loc(mdhisd(1))
 
      !spec 2d arrays
-     pfle_es_ptr = c_loc(pfle_es(1,1))
-     avewi_ptr = c_loc(avewi(1,1))
-     efle_es_ptr = c_loc(efle_es(1,1))
-     yyre_ptr = c_loc(yyre(1,1))
-     yyim_ptr = c_loc(yyim(1,1))
-     yyamp_ptr = c_loc(yyamp(1,1))
-     phihis_ptr = c_loc(phihis(1,1))
-     aparhis_ptr = c_loc(aparhis(1,1))
-     efle_em_ptr = c_loc(efle_em(1,1))
-     pfle_em_ptr = c_loc(pfle_em(1,1))
+     pfle_es_ptr = c_loc(pfle_es(1,0))
+     avewi_ptr = c_loc(avewi(1,0))
+     efle_es_ptr = c_loc(efle_es(1,0))
+     yyre_ptr = c_loc(yyre(1,0))
+     yyim_ptr = c_loc(yyim(1,0))
+     yyamp_ptr = c_loc(yyamp(1,0))
+     phihis_ptr = c_loc(phihis(0,0))
+     aparhis_ptr = c_loc(aparhis(0,0))
+     efle_em_ptr = c_loc(efle_em(1,0))
+     pfle_em_ptr = c_loc(pfle_em(1,0))
 
      !spec 3d arrays
-     pfl_es_ptr = c_loc(pfl_es(1,1,1))
-     efl_es_ptr = c_loc(efl_es(1,1,1))
-     efl_em_ptr = c_loc(efl_em(1,1,1))
-     pfl_em_ptr = c_loc(pfl_em(1,1,1))
+     pfl_es_ptr = c_loc(pfl_es(1,1,0))
+     efl_es_ptr = c_loc(efl_es(1,1,0))
+     efl_em_ptr = c_loc(efl_em(1,1,0))
+     pfl_em_ptr = c_loc(pfl_em(1,1,0))
 
 
 

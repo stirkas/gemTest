@@ -17,6 +17,7 @@ void Allocate2dPointerArrays_gem_com()
 {
    //2d arrays for spec()
    Allocate2dPointerArray<double>(pfle_es_ptr, pfle_es_cptr,nsubd,nmx+1);//check y dim
+   cout << "nsubd" << nsubd << "nmx" << nmx << endl;
    Allocate2dPointerArray<double>(avewi_ptr, avewi_cptr, 3, nmx+1);
    Allocate2dPointerArray<double>(efle_es_ptr, efle_es_cptr, nsubd, nmx+1);
    Allocate2dPointerArray<double>(yyre_ptr, yyre_cptr, jmx, 5);

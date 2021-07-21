@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iomanip>
 #include <string>
+#include <complex>
 
 #include "gem_com_c.h"
 #include "gem_equil_c.h"
@@ -16,7 +17,7 @@ extern "C"
 
 void spec_c_(int& n)
 {
-    int i,j,k,l,m;//,n;
+    int i,k,l,m;//,n;
     double pf, efe,efi,pfi,efc,pfc,efb,pfb,pflxgb,eflxgb,x;
     double pf_em, efe_em, efi_em, pfi_em,efc_em,pfc_em, efb_em, pfb_em;
     double tdum;
@@ -25,49 +26,47 @@ void spec_c_(int& n)
     eflxgb = xn0e_ptr[nr2]*cn0e*t0e_ptr[nr2]*sqrt(t0e_ptr[nr2]/mimp)*pow(rhoia,2);
     pflxgb = eflxgb/t0e_ptr[nr2];
     i = tcurr-dt;
-    pf = 0.;
-    efe = 0.;
-    efi = 0.;
-    pfi = 0.;
-    efc = 0.;
-    pfc = 0.;
-    efb = 0.;
-    pfb = 0.;
-    pf_em = 0.;
-    efe_em = 0.;
-    efi_em = 0.;
-    pfi_em = 0.;
-    efc_em = 0.;
-    pfc_em = 0.;
-    efb_em = 0.;
-    pfb_em = 0.;
+    pf = 0.0;
+    efe = 0.0;
+    efi = 0.0;
+    pfi = 0.0;
+    efc = 0.0;
+    pfc = 0.0;
+    efb = 0.0;
+    pfb = 0.0;
+    pf_em = 0.0;
+    efe_em = 0.0;
+    efi_em = 0.0;
+    pfi_em = 0.0;
+    efc_em = 0.0;
+    pfc_em = 0.0;
+    efb_em = 0.0;
+    pfb_em = 0.0;
     k = 2;
     x = float(nsubd)/float(nsubd-2*k);
 
-    j=1+k;
-    for(j;j < nsubd-k;j++)
+    for(int j = k;j < nsubd-k;j++)
     {
-        pf = pf+pfle_es_cptr[n][j]*vol_ptr[j]/(totvol*x);
-        efe = efe+efle_es_cptr[n][j]*vol_ptr[j]/(totvol*x);
-        efi = efi+efl_es_cptr[n][j][1]*vol_ptr[j]/(totvol*x);
-        pfi = pfi+pfl_es_cptr[n][j][1]*vol_ptr[j]/(totvol*x);
-        efc = efc+efl_es_cptr[n][j][2]*vol_ptr[j]/(totvol*x);
-        pfc = pfc+pfl_es_cptr[n][j][2]*vol_ptr[j]/(totvol*x);
-        efb = efb+efl_es_cptr[n][j][3]*vol_ptr[j]/(totvol*x);
-        pfb = pfb+pfl_es_cptr[n][j][3]*vol_ptr[j]/(totvol*x);
+        pf +=pfle_es_cptr[n][j]*vol_ptr[j]/totvol*x;
+        efe += efle_es_cptr[n][j]*vol_ptr[j]/totvol*x;
+        efi += efl_es_cptr[n][j][0]*vol_ptr[j]/totvol*x;
+        pfi += pfl_es_cptr[n][j][0]*vol_ptr[j]/totvol*x;
+        efc += efl_es_cptr[n][j][1]*vol_ptr[j]/totvol*x;
+        pfc += pfl_es_cptr[n][j][1]*vol_ptr[j]/totvol*x;
+        efb += efl_es_cptr[n][j][2]*vol_ptr[j]/totvol*x;
+        pfb += pfl_es_cptr[n][j][2]*vol_ptr[j]/totvol*x;
     }
 
-    j = 1+k;
-    for(j;j < nsubd-k;j++)
+    for(int j=k;j < nsubd-k;j++)
     {
-        pf_em = pf_em+pfle_em_cptr[n][j]*vol_ptr[j]/(totvol*x);
-        efe_em = efe_em+efle_em_cptr[n][j]*vol_ptr[j]/(totvol*x);
-        efi_em = efi_em+efl_em_cptr[n][j][1]*vol_ptr[j]/(totvol*x);
-        pfi_em = pfi_em+pfl_em_cptr[n][j][1]*vol_ptr[j]/(totvol*x);
-        efc_em = efc_em+efl_em_cptr[n][j][2]*vol_ptr[j]/(totvol*x);
-        pfc_em = pfc_em+pfl_em_cptr[n][j][2]*vol_ptr[j]/(totvol*x);
-        efb_em = efb_em+efl_em_cptr[n][j][3]*vol_ptr[j]/(totvol*x);
-        pfb_em = pfb_em+pfl_em_cptr[n][j][3]*vol_ptr[j]/(totvol*x);
+        pf_em += pfle_em_cptr[n][j]*vol_ptr[j]/totvol*x;
+        efe_em += efle_em_cptr[n][j]*vol_ptr[j]/totvol*x;
+        efi_em += efl_em_cptr[n][j][0]*vol_ptr[j]/totvol*x;
+        pfi_em += pfl_em_cptr[n][j][0]*vol_ptr[j]/totvol*x;
+        efc_em += efl_em_cptr[n][j][1]*vol_ptr[j]/totvol*x;
+        pfc_em += pfl_em_cptr[n][j][1]*vol_ptr[j]/totvol*x;
+        efb_em += efl_em_cptr[n][j][2]*vol_ptr[j]/totvol*x;
+        pfb_em += pfl_em_cptr[n][j][2]*vol_ptr[j]/totvol*x;
     }
 
     tdum = tcurr-dt;
@@ -83,28 +82,38 @@ void spec_c_(int& n)
         fstream yyreFile;
         yyreFile.open("yyre",ios::app);
 
-        cout << i << scientific << setprecision(12) << rmsphi_ptr[n] << "   " << rmsapa_ptr[n] << "   " << pf << "   " << efe << "   " << pfi << "   " << efi;
-        cout << " " << avewi_cptr[n][1] << "   " << avewe_ptr[n] << "   " << yyre_cptr[0][1];
-        cout << " " << yyim_cptr[0][1] << "   " << yyamp_cptr[0][1] << endl;
+        cout << scientific << setprecision(10) << setfill(' ') << uppercase;
+        cout << setw(7) << i;
+        cout << setw(19) << rmsphi_ptr[n] << setw(19) << rmsapa_ptr[n] << setw(19) << pf << setw(19) << efe << setw(19) << pfi << setw(19) << efi;
+        cout << setw(19) << avewi_cptr[n][0] << setw(19) << avewe_ptr[n] << setw(19) << yyre_cptr[0][0] << setw(19) << yyim_cptr[0][0] << setw(19) << yyamp_cptr[0][0];
+        cout << endl;
 
         if(plotFile.is_open())
         {
-            plotFile << i << scientific << setprecision(12) << "   " << rmsphi_ptr[n] << "   " << rmsapa_ptr[n] << "   " << pf << "   " << efe << "   " << pfi << "   " << efi;
-            plotFile <<  "   " << avewi_cptr[n][1] << "   " << avewe_ptr[n] << "   " << yyre_cptr[0][1];
-            plotFile << "   " << yyim_cptr[0][1] << "   " << yyamp_cptr[0][1]  << endl;  
+            plotFile << scientific << setprecision(3) << setfill(' ') << uppercase;
+            plotFile << setw(7) << i;
+            plotFile << setw(12) << rmsphi_ptr[n] << setw(12) << rmsapa_ptr[n] << setw(12) << pf << setw(12) << efe << setw(12) << pfi << setw(12) << efi;
+            plotFile << setw(12) << avewi_cptr[n][0] << setw(12) << avewe_ptr[n] << setw(12) << yyre_cptr[0][0] << setw(12) << yyim_cptr[0][0] << setw(12) << yyamp_cptr[0][0];
+            plotFile << endl;  
         }
         
         if(fluxFile.is_open())
         {
-            fluxFile << i << scientific << setprecision(12) << "   " << pf / pflxgb << "   " << pfi / pflxgb << "   " << pfc / pflxgb<< "   " ;
-            fluxFile << efe / eflxgb << "   " << efi / eflxgb << "   "  << efc / eflxgb << "   " ;
-            fluxFile << pf_em / pflxgb << "   "  << pfi_em / pflxgb << "   " << pfc_em / pflxgb << "   " ;
-            fluxFile << efe_em / eflxgb << "   "  << efi_em / eflxgb << "   "  << efc_em / eflxgb << endl;
+            fluxFile << scientific << setprecision(5) << setfill(' ') << uppercase;
+            fluxFile << setw(7) << i;
+            fluxFile << setw(14) << pf / pflxgb << setw(14) << pfi / pflxgb << setw(14) << pfc / pflxgb;
+            fluxFile << setw(14) << efe / eflxgb << setw(14) << efi / eflxgb << setw(14) << efc / eflxgb;
+            fluxFile << setw(14) << pf_em / pflxgb << setw(14) << pfi_em / pflxgb << setw(14) << pfc_em / pflxgb;
+            fluxFile << setw(14) << efe_em / eflxgb << setw(14) << efi_em / eflxgb << setw(14) << efc_em / eflxgb;
+            fluxFile << endl;
         }
         
         if(yyreFile.is_open())
         {
-            yyreFile << i << scientific << setprecision(12) << "   " << yyre_cptr[0][1] << "   " << yyre_cptr[1][1] << "   " << yyre_cptr[3][1] << "   " << yyre_cptr[4][1] << endl;
+            yyreFile << scientific << setprecision(5) << setfill(' ') << uppercase;
+            yyreFile << setw(7) << i;
+            yyreFile << setw(14) << yyre_cptr[0][0] << setw(14) << yyre_cptr[0][0] << setw(14) << yyre_cptr[3][0] << setw(14) << yyre_cptr[4][0];
+            yyreFile << endl;
         }
         
 
