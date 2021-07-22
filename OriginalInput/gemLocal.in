@@ -4,29 +4,29 @@ mimp=2        !mass ratio of ions with respect to to protons
 mcmp=2        !mass ratio of impurities with respect to to protons
 chgi=1        !charge of ions with respect to to electron charge
 chgc=1        !charge of impurity ions with respect to electron charge
-imx=32      !number of grid points along x direction
-jmx=32      !number of grid points along y direction - can be changed to lower time
-kmx=8        !number of grid points along z direction
-mmx=400000    !maximum number of marker particles 
-mmxe=80000  !
-nmx=10    !maximum number of time steps
+imx=8         !number of grid points along x direction
+jmx=8         !number of grid points along y direction - can be changed to lower time
+kmx=2         !number of grid points along z direction
+mmx=40000     !maximum number of marker particles 
+mmxe=80000    !
+nmx=5000      !maximum number of time steps
 nsmx=3        !maximum number if impurity ions
-ntube=4       !the z direction is divided in to km grids 
+ntube=1       !the z direction is divided in to km grids 
               !these grids are used for the primary domain decomposition. 
               !particles in each z grid are then distributed among ntube processors so that, 
               !total number of processors=kmx*ntube.  
               !also, the calculation of jm Fourier components of potentials is equally distributed 
               !among the ntube processors. Therefore, jmx/ntube must be an integer 
-lxa=0.86       !radial box size, for fixed BC in linear runs
+lxa=0.86      !radial box size, for fixed BC in linear runs
               !radial box size for nonlinear simulation
               !for periodic boundary condition linear runs, lxa is defined in equilf90 as 1/nq'
-lymult=2     !number of wedges the whole tokamak is partitioned in total Number of toroidal mode number 
+lymult=2      !number of wedges the whole tokamak is partitioned in total Number of toroidal mode number 
               !in linear runs. delta n in nonlinear runs
-jcnt=3 !
+jcnt=3        !
 dt=32.366119222702295   !times steps in units of omega_u=eB/mp
-nm=10       !total no of times steps
+nm=500        !total no of times steps
 nsm=1         !number of ion species
-amp=1.e-12     !amplitude of initial weight defined in loading (loadi and ldel)
+amp=1.e-12    !amplitude of initial weight defined in loading (loadi and ldel)
               !always set 0.01 in gem.in
               !automatically set to 0 when iget=1, that is restartin
 fradi=0.0     !adiabatic fraction of electrons; set equal to isg the split weight factor
@@ -94,7 +94,7 @@ npzb=16       !used to define critical value of beam ion toroidal canonical mome
 iphbf=0       !1, use blending function for phi
 iapbf=0       !1, use blending function for A_{||}
 idpbf=0       !1, use blending flunction for d\phi/dt; 0 always  
-cut=1.0     !used in restart, redefines weight as weight/cut
+cut=1.0       !used in restart, redefines weight as weight/cut
               !however in initialize, cut redefined if (cut.eq.0.) cut=1
               !always 1 in gem.in
 kxcut=1.5     !cut off value for kx
@@ -110,7 +110,7 @@ vparsw=0.     !switch for equilibrium parallel flow
 mach=0.       !value with respect to ion sound speed, used to define flow
 gamma_E=0.066 !EXB shearing rate, given in cs/a
 isuni=0       !0 always. Used earlier for uniform loading
-lr1=8         !is the number of points for gyro averaging.
+lr1=4         !is the number of points for gyro averaging.
 iflr=1        !always 1. To include the finite Larmor radius effect of the ions; used in ppush, cpush, grid1, jie
 iorb=1        !always 1. To include finite orbit width term (??). Multiplied to the magnetic drift terms in               !ppush an cpush
 /
@@ -125,7 +125,7 @@ modem=4       !used in outd.f for hist.out. The maximum no of mode history plots
 isft=0        !if isft=1, code calculates the real frequency 
 mynf=10       !nfreq=kmx*mynf no of points in in Fourier transform
 frmax=0.005   !maximum range of frequency
-ifskp=10      !used in yveck1 and ftcamp,  nsize=nm/ifskp
+ifskp=1       !used in yveck1 and ftcamp,  nsize=nm/ifskp
 idg=0         !0 always; 1, writes various component to the output file run.out
 /
 &fluxtube
@@ -136,15 +136,15 @@ tria0=0.      !triangularity: stretch radially outward
 stria0=0.     !radial variation of triangularity
 rmaj0p=-0.0   !measure of Shafranov shift
 q0=1.4        !safety factor 
-shat0=0.78     !shear
+shat0=0.78    !shear
 teti=1.0      !ratio of electron temperature to ion temperature
 tcti=1.0      !ratio of impurity temperature to ion temperature
 rhoia=0.00393 !rhos/a
-Rovlni=2.2   !ion density gradient scale length normalized to major radius
-Rovlti=6.9   !ion temperature gradient scale length normalized to major radius
-Rovlne=2.2   !electron density gradient scale length normalized to major radius
-Rovlte=6.9   !electron temperature gradient scale length normalized to major radius
-Rovlnc=12.     !impurity density gradient scale length normalized to major radius
+Rovlni=2.2    !ion density gradient scale length normalized to major radius
+Rovlti=6.9    !ion temperature gradient scale length normalized to major radius
+Rovlne=2.2    !electron density gradient scale length normalized to major radius
+Rovlte=6.9    !electron temperature gradient scale length normalized to major radius
+Rovlnc=12.    !impurity density gradient scale length normalized to major radius
 Rovltc=0.     !impurity temperature gradient scale length normalized to major radius
 ncne=1.0e-8   !measure of impurity concentration, ratio of impurity to electron density
 nuacs=0e-3    !electron ion collision frequency???
