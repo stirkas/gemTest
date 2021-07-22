@@ -4,6 +4,9 @@ code/*.lst
 code/*.mod
 code/gem_main
 testcase/gem_main
+dfftpack/src/*.o
+dfftpack/src/*.a
+dfftpack/src/*.so
 
 #Ignore output files.
 **/*.out
