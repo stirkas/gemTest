@@ -1,13 +1,11 @@
 SRCS =	gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_wrapper.f90 gem_gkps_adi.f90
-
 OBJS =	gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
-LSTDC++ = /usr/lib/gcc/x86_64-linux-gnu/7/libstdc++.so#this is trying to link the c++ library 
 PLIB = gem_pputil.o
 
 #Pick a compiler!
-GNU = 0
-CRAY = 0
-INTEL = 1
+GNU   = 1
+CRAY  = 0
+INTEL = 0
 #Debugging?
 DEBUG = 0
 
@@ -23,7 +21,7 @@ ifeq ($(GNU),1)
         OPT_C = -O2 -g
     endif
     
-    LIBS = /usr/local/lib/libdfftpack.a /usr/lib/x86_64-linux-gnu/liblapack.so -lstdc++
+    LIBS = ../dfftpack/gnu/libdfftpack.a /usr/lib/x86_64-linux-gnu/liblapack.so -lstdc++
     LDFLAGS = 
 endif
 
@@ -39,7 +37,7 @@ ifeq ($(INTEL),1)
         OPT_C = -O2 -g
     endif
     
-    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack/libdfftpack.a -lstdc++
+    LIBS = ../dfftpack/intel/libdfftpack.a -lstdc++
     LDFLAGS = 
 endif
 
@@ -55,7 +53,7 @@ ifeq ($(CRAY),1)
         OPT_C = -O2 -g
     endif
       
-    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack-cray/libdfftpack.a -lstdc++
+    LIBS = ../dfftpack/cray/libdfftpack.a -lstdc++
     LDFLAGS = 
 endif
 

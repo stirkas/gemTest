@@ -14,10 +14,10 @@
 # (7) Modified names for dble prec version
 LIB=dfftpack
 
-#GNU compiler
+# PGI compiler
 #FC=pgf90
-FC=gfortran -g -dynamic
-FFLAGS= -O2 -funroll-loops -fexpensive-optimizations
+FC=ftn -g -dynamic
+FFLAGS=-fast -no-ipo
 
 # Use these lines for Linux/g77
 #FC=g77
