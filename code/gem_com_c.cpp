@@ -5,6 +5,24 @@
 
 using namespace std;
 
+//Define global pointers for header access.
+double** pfle_es_cptr = nullptr;
+double** avewi_cptr   = nullptr;
+double** efle_es_cptr = nullptr;
+double** yyre_cptr    = nullptr;
+double** yyim_cptr    = nullptr;
+double** yyamp_cptr   = nullptr;
+double** efle_em_cptr = nullptr;
+double** pfle_em_cptr = nullptr;
+
+complex<double>** phihis_cptr  = nullptr;
+complex<double>** aparhis_cptr = nullptr;
+
+double*** pfl_es_cptr  = nullptr;
+double*** efl_es_cptr  = nullptr;
+double*** pfl_em_cptr  = nullptr;
+double*** efl_em_cptr  = nullptr;
+
 void new_gem_com_c_()
 {
    //cout << "Allocating C arrays for gem com." << endl;

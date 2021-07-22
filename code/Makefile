@@ -2,15 +2,62 @@ SRCS =	gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_
 
 OBJS =	gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
 LSTDC++ = /usr/lib/gcc/x86_64-linux-gnu/7/libstdc++.so#this is trying to link the c++ library 
-LIBS = /usr/local/lib/libdfftpack.a /usr/lib/x86_64-linux-gnu/liblapack.so -lstdc++
 PLIB = gem_pputil.o
 
-F90 = mpif90 #ftn
-C++ = g++
-#OPT = -FR -r8 -heap-arrays -O2 -g -traceback -check bounds
-OPT = -FR -fdefault-real-8 -O2 -ffree-line-length-512 -fcheck=all -g -fbacktrace #-Wall
-OPT_C = -O2 -std=gnu++17 #need to make sure that this works for c++14 on the cray computers
-LDFLAGS = 
+#Pick a compiler!
+GNU = 0
+CRAY = 0
+INTEL = 1
+#Debugging?
+DEBUG = 0
+
+ifeq ($(GNU),1)
+    F90 = mpif90
+    C++ = g++
+    
+    ifeq ($(DEBUG),0)
+        OPT   = -FR -fdefault-real-8 -O3 -ffree-line-length-512
+        OPT_C = -O3
+    else
+        OPT   = -FR -fdefault-real-8 -O2 -ffree-line-length-512 -fcheck=all -g -fbacktrace -Wall
+        OPT_C = -O2 -g
+    endif
+    
+    LIBS = /usr/local/lib/libdfftpack.a /usr/lib/x86_64-linux-gnu/liblapack.so -lstdc++
+    LDFLAGS = 
+endif
+
+ifeq ($(INTEL),1)
+    F90 = ftn
+    C++ = icpc
+    
+    ifeq ($(DEBUG),0)
+        OPT   = -FR -r8 -O3
+        OPT_C = -O3
+    else
+        OPT   = -FR -r8 -heap-arrays -O2 -g -traceback -check bounds
+        OPT_C = -O2 -g
+    endif
+    
+    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack/libdfftpack.a -lstdc++
+    LDFLAGS = 
+endif
+
+ifeq ($(CRAY),1)
+    F90 = ftn
+    C++ = CC
+    
+    ifeq ($(DEBUG),0)
+        OPT = -f free -s real64 -O3
+        OPT_C = -O3
+    else
+        OPT = # ??? Need debug flags.
+        OPT_C = -O2 -g
+    endif
+      
+    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack-cray/libdfftpack.a -lstdc++
+    LDFLAGS = 
+endif
 
 #all : gem
 

@@ -20,18 +20,18 @@ extern double *pfle_es_ptr,*avewi_ptr,*efle_es_ptr,*yyre_ptr,*yyim_ptr;
 
 extern double *yyamp_ptr, *efle_em_ptr, *pfle_em_ptr;
 
-inline double **pfle_es_cptr = nullptr,**avewi_cptr = nullptr,**efle_es_cptr = nullptr,**yyre_cptr = nullptr ,**yyim_cptr = nullptr;
+extern double **pfle_es_cptr,**avewi_cptr,**efle_es_cptr,**yyre_cptr,**yyim_cptr;
 
-inline double **yyamp_cptr = nullptr, **efle_em_cptr = nullptr, **pfle_em_cptr = nullptr;
+extern double **yyamp_cptr, **efle_em_cptr, **pfle_em_cptr;
 
 extern std::complex<double> *phihis_ptr,*aparhis_ptr;
 
-inline std::complex<double> **phihis_cptr = nullptr,**aparhis_cptr = nullptr;
+extern std::complex<double> **phihis_cptr,**aparhis_cptr;
 
 //3d pointers
 extern double *pfl_es_ptr, *efl_es_ptr, *efl_em_ptr, *pfl_em_ptr;
 
-inline double ***pfl_es_cptr = nullptr, ***efl_es_cptr = nullptr, ***pfl_em_cptr = nullptr, ***efl_em_cptr = nullptr;
+extern double ***pfl_es_cptr, ***efl_es_cptr, ***pfl_em_cptr, ***efl_em_cptr;
 
 //functions to allocate the pointers for arrays of dimension 2+
 extern "C"
@@ -42,8 +42,6 @@ extern "C"
 void Allocate2dPointerArrays_gem_com();
 void Allocate3dPointerArrays_gem_com();
 void Allocate4dPointerArrays_gem_com();
-
-
 
 
 
