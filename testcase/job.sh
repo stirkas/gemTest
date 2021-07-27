@@ -16,6 +16,10 @@ mkdir -p dump
 #export OMP_PLACES=threads
 export OMP_NUM_THREADS=8
 #export OMP_STACKSIZE=1G
+
+#Run locally.
 mpirun -n 2 ./gem_main > run.out 2> run.err
+#Run on Cori.
+#srun -n 2 ./gem_main > run.out 2> run.err
 
 wait
