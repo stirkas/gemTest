@@ -22,3 +22,6 @@ dfftpack/src/*.so
 **/indicator
 **/plot
 **/yyre
+
+#ipynb notebook stuff
+**/.ipynb_checkpoints
