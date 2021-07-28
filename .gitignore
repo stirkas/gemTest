@@ -11,6 +11,7 @@ dfftpack/src/*.so
 #Ignore output files.
 **/*.out
 **/*.err
+**/gem_main
 **/dump
 **/matrix
 **/out

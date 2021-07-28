@@ -7,13 +7,9 @@
 
 #include "gem_com_c.h"
 #include "gem_equil_c.h"
+#include "gem_functions_c.h"
 
 using namespace std;
-
-extern "C"
-{
-    void spec_c_(int& n);
-};
 
 void spec_c_(int& n)
 {

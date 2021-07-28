@@ -8,7 +8,7 @@
 
 extern double tcurr,totvol,dt;
 
-extern int myid,imx,nmx,jmx,jcnt,nsubd,master, gclr, tclr, kmx;
+extern int myid,imx,nmx,jmx,jcnt,nsubd,master, gclr, tclr, kmx, xnplt, ipred, icorr, jpred, jcorr, nopz, noen, nowe, idg, iput, ierr;
 
 //1d pointers
 extern double *vol_ptr,*rmsapa_ptr,*rmsphi_ptr,*avewe_ptr,*mdhis_ptr,*mdhisa_ptr;

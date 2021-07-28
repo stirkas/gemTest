@@ -1,27 +1,30 @@
 SRCS =	gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_wrapper.f90 gem_gkps_adi.f90
-OBJS =	gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
+
+OBJS =	gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o reporter_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
+LSTDC++ = /usr/lib/gcc/x86_64-linux-gnu/7/libstdc++.so#this is trying to link the c++ library 
+
 PLIB = gem_pputil.o
 
 #Pick a compiler!
-GNU   = 1
-CRAY  = 0
+GNU = 1
+CRAY = 0
 INTEL = 0
 #Debugging?
 DEBUG = 0
 
 ifeq ($(GNU),1)
     F90 = mpif90
-    C++ = g++
+    C++ = mpic++
     
     ifeq ($(DEBUG),0)
         OPT   = -FR -fdefault-real-8 -O3 -ffree-line-length-512
-        OPT_C = -O3
+        OPT_C = -O3  #-fopenmp
     else
         OPT   = -FR -fdefault-real-8 -O2 -ffree-line-length-512 -fcheck=all -g -fbacktrace -Wall
-        OPT_C = -O2 -g
+        OPT_C = -O2 -g  #-fopenmp
     endif
     
-    LIBS = ../dfftpack/gnu/libdfftpack.a /usr/lib/x86_64-linux-gnu/liblapack.so -lstdc++
+    LIBS = /usr/local/lib/libdfftpack.a /usr/lib/x86_64-linux-gnu/liblapack.so /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so -lstdc++
     LDFLAGS = 
 endif
 
@@ -37,7 +40,7 @@ ifeq ($(INTEL),1)
         OPT_C = -O2 -g
     endif
     
-    LIBS = ../dfftpack/intel/libdfftpack.a -lstdc++
+    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack/libdfftpack.a -lstdc++
     LDFLAGS = 
 endif
 
@@ -49,18 +52,18 @@ ifeq ($(CRAY),1)
         OPT = -f free -s real64 -O3
         OPT_C = -O3
     else
-        OPT = # ??? Need debug flags.
+        OPT = -f free -s real64 -h msglevel_n# ??? Need debug flags.
         OPT_C = -O2 -g
     endif
       
-    LIBS = ../dfftpack/cray/libdfftpack.a -lstdc++
+    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack-cray/libdfftpack.a -lstdc++
     LDFLAGS = 
 endif
 
 #all : gem
 
 gem_main: ${OBJS}
-	$(F90)  -o gem_main $(OPT) $(OBJS) $(PLIB) $(LIBS) 
+	$(F90)  -o gem_main $(OPT) $(OBJS) $(PLIB) $(LIBS)
 
 gem_pputil.o: gem_pputil.f90
 	$(F90) -c $(OPT) gem_pputil.f90
@@ -100,6 +103,9 @@ gem_fft_wrapper.o: gem_fft_wrapper.f90
 
 spec_c.o: spec_c.cpp
 	$(C++) -c $(OPT_C) spec_c.cpp
+
+reporter_c.o: reporter_c.cpp
+	$(C++) -c $(OPT_C) reporter_c.cpp
 
 clean:
 	rm -f *.o *.lst *.mod gem_main

@@ -20,6 +20,16 @@ program gem_main
       integer(c_int) :: n
     end subroutine spec_c
 
+    subroutine reporter_c(n) bind(c)
+      use iso_c_binding
+      integer(c_int) :: n 
+    end subroutine reporter_c
+
+    subroutine reportertest(n) bind(c)
+      use iso_c_binding
+      integer(c_int) :: n
+    end subroutine reportertest
+
     !TODO: Move into the right modules.
     subroutine new_gem_com_c() bind(c)
        use iso_c_binding
@@ -5028,26 +5038,30 @@ subroutine reporter(n)
   use gem_equil
   implicit none
   integer :: n,i,j,k,ip
+!
+!  if(mod(n,xnplt).eq.0) then
+!     call spec_c(n)
+!  endif
+!13 format(1x,i6,7(2x,i7))
+!  if(myid.eq.master)then
+!     open(16, file='indicator', status='unknown',position='append')
+!     write(16,13)n,ipred,icorr,jpred,jcorr,nopz,noen,nowe
+!     close(16)
+!  end if
 
-  if(mod(n,xnplt).eq.0) then
-     call spec_c(n)
-  endif
-13 format(1x,i6,7(2x,i7))
-  if(myid.eq.master)then
-     open(16, file='indicator', status='unknown',position='append')
-     write(16,13)n,ipred,icorr,jpred,jcorr,nopz,noen,nowe
-     close(16)
-  end if
+  call reporter_c(n)
   !        if(myid==0)write(*,13)n,ipred,icorr,jpred,jcorr,nopz,noen
-  call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+  !call MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
   !     save particle arrays for restart if iput=1...
-  !     do this before the code crashes due to graphics problems
-  if((iput.eq.1).and.mod(n+1,500).eq.0)call restart(2,n)
+!  !     do this before the code crashes due to graphics problems
+!  if((iput.eq.1).and.mod(n+1,500).eq.0)call restart(2,n)
+!
+!  !     periodically make output for plots
+!  call outd(n)
+!  if(idg.eq.1)write(*,*)'pass outd'
 
-  !     periodically make output for plots
-  call outd(n)
-  if(idg.eq.1)write(*,*)'pass outd'
+ ! call reportertest(n)
 
 end subroutine reporter
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

@@ -1,0 +1,12 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.associations": {
+        "ostream": "cpp",
+        "fstream": "cpp",
+        "iostream": "cpp",
+        "iomanip": "cpp",
+        "iosfwd": "cpp",
+        "complex": "cpp"
+    },
+    "C_Cpp.default.includePath": ["/usr/lib/x86_64-linux-gnu/openmpi/include"]
+}

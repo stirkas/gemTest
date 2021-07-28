@@ -57,11 +57,11 @@ module gem_com
   integer :: izonal,adiabatic_electron,ineq0,iflut,nlow,ntor0,mstart
   REAL :: cut,amp,tor,amie,isg,rneu,rneui,emass,qel,mbeam,qbeam,teth,vexbsw,vparsw
   REAL :: c4,fradi,kxcut,kycut,bcut,ftrap,adwn,adwe,adwp,frmax
-  INTEGER :: iput,iget,idg,kzlook,ision,isiap,peritr,iadi,ipred,icorr,jpred,jcorr
+  INTEGER, bind(c) :: iput,iget,idg,kzlook,ision,isiap,peritr,iadi,ipred,icorr,jpred,jcorr
   REAL,target, DIMENSION(:,:),allocatable :: yyamp,yyre,yyim
   complex,dimension(:,:),allocatable :: camp,campf
   REAL :: br0,lr0,qp,width,e0,vwidth,vwidthe,vcut,vpp,vt0,yd0
-  integer :: nonlin(5),nonline,ipara,isuni,ifluid,ishift,nopz,nopi(5),noen,nowe
+  integer, bind(c) :: nonlin(5),nonline,ipara,isuni,ifluid,ishift,nopz,nopi(5),noen,nowe
   complex :: IU
   real,dimension(:),allocatable :: coefx,coefy,coefz
   complex,dimension(1:8) :: apk,ptk,dpdtk
@@ -116,7 +116,7 @@ module gem_com
   !              Various diagnostic arrays and scalars
   !    plotting constants
 
-  INTEGER :: nplot,xnplt,imovie=1000000,nzcrt,npze,npzi,npzc,npzb
+  INTEGER, bind(c) :: nplot,xnplt,imovie=1000000,nzcrt,npze,npzi,npzc,npzb
   REAL :: contu,wmax
 
   !    energy diagnostic arrays
