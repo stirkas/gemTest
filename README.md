@@ -6,7 +6,7 @@ Compiling on a local machine with the GNU compilers requires installing LAPACK a
 * OMP_LIB_DIR
 * OMP_INC_DIR
 
-Compiling on NERSC/Cori requires loading the correct modules for the following compilers:
+Compiling on NERSC/Cori requires loading the correct modules for the following compilers:</br>
 **Note:** Use `module swap PrgEnv-intel PrgEnvl-cray` if you need to swap rather than load. This also works with `module swap impi openmpi` for instance.
 * Cray:  module load PrgEnv-cray
 * Intel: module load PrgEnv-intel impi
