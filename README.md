@@ -13,5 +13,4 @@ Compiling on NERSC/Cori requires loading the correct modules for the following c
 * GNU:   module load PrgEnv-gnu openmpi
 
 ## Debugging
-Debugging flags for the compilers can be enabled by setting the `DEBUG` flag to 1 in the makefile.
-
+Debugging flags for the compilers can be enabled by setting the `DEBUG` flag to 1 in the makefile. The makefile is source controlled though so maybe there is a better way to handle this that won't get tracked.
