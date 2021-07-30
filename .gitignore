@@ -23,5 +23,5 @@ dfftpack/src/*.so
 **/plot
 **/yyre
 
-#ipynb notebook stuff
+#ipynb notebook stuff for NERSC's remote Jupyter use.
 **/.ipynb_checkpoints

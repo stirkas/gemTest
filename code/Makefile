@@ -1,62 +1,84 @@
 SRCS =	gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_wrapper.f90 gem_gkps_adi.f90
-
 OBJS =	gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o reporter_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
-LSTDC++ = /usr/lib/gcc/x86_64-linux-gnu/7/libstdc++.so#this is trying to link the c++ library 
+PLIB =  gem_pputil.o
+LIBS =  -lstdc++
 
-PLIB = gem_pputil.o
-
-#Pick a compiler!
-GNU = 1
-CRAY = 0
-INTEL = 0
 #Debugging?
 DEBUG = 0
 
-ifeq ($(GNU),1)
-    F90 = mpif90
-    C++ = mpic++
-    
-    ifeq ($(DEBUG),0)
-        OPT   = -FR -fdefault-real-8 -O3 -ffree-line-length-512
-        OPT_C = -O3  #-fopenmp
-    else
-        OPT   = -FR -fdefault-real-8 -O2 -ffree-line-length-512 -fcheck=all -g -fbacktrace -Wall
-        OPT_C = -O2 -g  #-fopenmp
-    endif
-    
-    LIBS = /usr/local/lib/libdfftpack.a /usr/lib/x86_64-linux-gnu/liblapack.so /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so -lstdc++
-    LDFLAGS = 
+#Get the location of the dfftpack library using git root dir.
+DFFTPACK_DIR = $(shell git rev-parse --show-toplevel)/dfftpack
+
+#Get a list of loaded modules from Cori.
+ifeq (${NERSC_HOST}, cori)
+   MOD_LIST = ${LOADEDMODULES}
 endif
 
-ifeq ($(INTEL),1)
-    F90 = ftn
-    C++ = icpc
-    
-    ifeq ($(DEBUG),0)
-        OPT   = -FR -r8 -O3
-        OPT_C = -O3
-    else
-        OPT   = -FR -r8 -heap-arrays -O2 -g -traceback -check bounds
-        OPT_C = -O2 -g
-    endif
-    
-    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack/libdfftpack.a -lstdc++
-    LDFLAGS = 
-endif
+#Figure out which compiler to used based on Cori loaded module list. No modules means default to GNU.
 
-ifeq ($(CRAY),1)
+#CRAY
+ifeq ($(findstring PrgEnv-cray, $(MOD_LIST)), PrgEnv-cray)
     F90 = ftn
     C++ = CC
     
+    OPT_COMMON   = -f free -s real64 -h omp
+    OPT_C_COMMON = -fopenmp 
     ifeq ($(DEBUG),0)
-        OPT = -f free -s real64 -O3
-        OPT_C = -O3
+        OPT   = $(OPT_COMMON)   -O3
+        OPT_C = $(OPT_C_COMMON) -O3 
     else
-        OPT = -f free -s real64 -h msglevel_n# ??? Need debug flags.
-        OPT_C = -O2 -g
+	OPT_DEBUG_COMMON = -O2 -g
+        OPT   = $(OPT_COMMON)   $(OPT_DEBUG_COMMON) -O negmsgs
+        OPT_C = $(OPT_C_COMMON) $(OPT_DEBUG_COMMON)
     endif
       
-    LIBS = /project/projectdirs/mp118/jycheng/SOFTWARE/dfftpack-cray/libdfftpack.a -lstdc++
+    LIBS += $(DFFTPACK_DIR)/cray/libdfftpack.a
+    LDFLAGS = 
+
+#INTEL
+else ifeq ($(findstring PrgEnv-intel, $(MOD_LIST)), PrgEnv-intel)
+    ifeq ($(findstring impi, $(MOD_LIST)), impi) #Intel also requires impi for linking mpi. Makefiles don't really support AND so double nest...
+        F90 = mpiifort
+        C++ = mpiicpc
+     
+        OPT_COMMON   = -FR -r8 -mkl -qopenmp
+        OPT_C_COMMON = -mkl -qopenmp
+        ifeq ($(DEBUG),0)
+            OPT   = $(OPT_COMMON)   -O3
+            OPT_C = $(OPT_C_COMMON) -O3
+        else
+	    OPT_DEBUG_COMMON = -O2 -g -heap-arrays -traceback
+            OPT   = $(OPT_COMMON)   $(OPT_DEBUG_COMMON) -check bounds
+            OPT_C = $(OPT_C_COMMON) $(OPT_DEBUG_COMMON)
+        endif
+     
+        LIBS += $(DFFTPACK_DIR)/intel/libdfftpack.a
+        LDFLAGS = 
+    endif
+
+#GNU
+else
+    F90 = mpif90
+    C++ = mpic++
+    INCS = ${OMP_INC_DIR}
+
+    OPT_COMMON   = -FR -fdefault-real-8 -ffree-line-length-512
+    OPT_C_COMMON = -I"$(INCS)"
+    ifeq ($(DEBUG),0)
+        OPT   = $(OPT_COMMON)   -O3
+        OPT_C = $(OPT_C_COMMON) -O3
+    else
+	OPT_DEBUG_COMMON = -O2 -g -fcheck=all -fbacktrace -Wall
+        OPT   = $(OPT_COMMON)   $(OPT_DEBUG_COMMON)
+        OPT_C = $(OPT_C_COMMON) $(OPT_DEBUG_COMMON)
+    endif
+ 
+    LIBS += $(DFFTPACK_DIR)/gnu/libdfftpack.a
+    ifeq (${NERSC_HOST}, cori)
+	LIBS += /usr/lib64/lapack/liblapack.so.3 #There's probably a better way to do this...
+    else 
+        LIBS += ${LAPACK_LIB_DIR}/liblapack.so ${OMP_LIB_DIR}/libmpi_cxx.so
+    endif
     LDFLAGS = 
 endif
 
@@ -89,13 +111,10 @@ gem_main.o: gem_main.f90 gem_fft_wrapper.o gem_pputil.o gem_com.o gem_equil.o ge
 gem_outd.o: gem_outd.f90 gem_fft_wrapper.o gem_pputil.o gem_com.o gem_equil.o 
 	$(F90) -c $(OPT) gem_outd.f90
 
-#gem_fcnt.o: gem_fcnt.f90
-#	$(F90) -c $(OPT) gem_fcnt.f90
-
-gem_fcnt_c.o: gem_fcnt_c.cpp#this is trying to compile the cpp file
+gem_fcnt_c.o: gem_fcnt_c.cpp #this is trying to compile the cpp file
 	$(C++) -c $(OPT_C) gem_fcnt_c.cpp
 
-gem_fcnt_f.o: gem_fcnt_f.f90#this is tryint to compile the f90 file
+gem_fcnt_f.o: gem_fcnt_f.f90 #this is tryint to compile the f90 file
 	$(F90) -c $(OPT) gem_fcnt_f.f90
 
 gem_fft_wrapper.o: gem_fft_wrapper.f90

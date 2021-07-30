@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <string>
 #include <complex>
-#include <mpi/mpi.h>
+#include <mpi.h>
 
 #include "gem_com_c.h"
 #include "gem_equil_c.h"
