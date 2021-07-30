@@ -14,7 +14,7 @@ ifeq (${NERSC_HOST}, cori)
    MOD_LIST = ${LOADEDMODULES}
 endif
 
-#Figure out which compiler to used based on Cori loaded module list. No modules means default to GNU.
+#Figure out which compiler to used based on Cori loaded module list. Default to GNU.
 
 #CRAY
 ifeq ($(findstring PrgEnv-cray, $(MOD_LIST)), PrgEnv-cray)
