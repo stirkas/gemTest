@@ -28,9 +28,9 @@ You will have to reopen any programs such as shells or Visual Studio Code to rel
 
 Compiling on NERSC/Cori requires loading the correct modules for the following compilers:</br>
 
-* Cray:  module load PrgEnv-cray
-* Intel: module load PrgEnv-intel impi
-* GNU:   module load PrgEnv-gnu openmpi
+* Cray:  `module load PrgEnv-cray`
+* Intel: `module load PrgEnv-intel impi`
+* GNU:   `module load PrgEnv-gnu openmpi`
 
 **Note:** Use `module swap PrgEnv-intel PrgEnvl-cray` if you need to swap rather than load. This also works with `module swap impi openmpi` for instance.
 
