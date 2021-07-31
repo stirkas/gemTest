@@ -13,16 +13,16 @@ Compiling on a local machine with the GNU compilers requires installing LAPACK a
 * OMP_INC_DIR
 
 On systems with the apt package manager these can be installed using </br>
-> `sudo apt-get install libblas-dev liblapack-dev libopenmpi-dev`
+`sudo apt-get install libblas-dev liblapack-dev libopenmpi-dev`
 
 You can locate the directories using </br>
-> `locate openmpi` or `locate lapack`
+`locate openmpi` or `locate lapack`
 
 Then set the correct environment variables in ~/.bashrc with </br>
-> `export LAPACK_LIB_DIR="/path/to/LAPACK/lib/dir"`
+`export LAPACK_LIB_DIR="/path/to/LAPACK/lib/dir"`
 
 You will have to reopen any programs such as shells or Visual Studio Code to reload environment variables. Although for your bash shell you can also just type </br>
->`source ~/.bashrc`
+`source ~/.bashrc`
 
 ### **Cori**
 
