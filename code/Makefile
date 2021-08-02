@@ -88,7 +88,7 @@ endif
 #all : gem
 
 gem_main: $(OBJS)
-	$(F90) -o gem_main #$(OPT) $(OBJS) $(PLIB) $(LIBS)
+	$(F90) -o gem_main $(OPT) $(OBJS) $(PLIB) $(LIBS)
 
 gem_pputil.o: gem_pputil.f90
 	$(F90) -c $(OPT) gem_pputil.f90

@@ -16,7 +16,7 @@ On systems with the apt package manager these can be installed using </br>
 `sudo apt-get install libblas-dev liblapack-dev libopenmpi-dev`
 
 You can locate the directories using </br>
-`locate openmpi` or `locate lapack`
+`whereis openmpi` or, for lapack, `whereis lapack`
 
 Then set the correct environment variables in ~/.bashrc with </br>
 `export LAPACK_LIB_DIR="/path/to/LAPACK/lib/dir"`
