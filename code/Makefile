@@ -2,7 +2,7 @@ SRCS = gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_
 OBJS = gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o reporter_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
 PLIB = gem_pputil.o
 LIBS = -lstdc++
-INCS = ${OMP_INC_DIR}
+INCS = -I"${OMP_INC_DIR}"
 
 #Set debug flag to 0 so it has to be forced to 1 to get debug builds.
 DEBUG = 0
@@ -66,7 +66,7 @@ else
     C++ = mpic++
 
     OPT_COMMON   = -FR -fdefault-real-8 -ffree-line-length-512
-    OPT_C_COMMON = -I"$(INCS)"
+    OPT_C_COMMON = $(INCS)
     ifeq ($(DEBUG),0)
         OPT   = $(OPT_COMMON)   -O3
         OPT_C = $(OPT_C_COMMON) -O3
@@ -76,8 +76,7 @@ else
         OPT_C = $(OPT_C_COMMON) $(OPT_DEBUG_COMMON)
     endif
 
-    LIBS += $(DFFTPACK_DIR)/gnu/libdfftpack.a
-    LIBS += -llapack -lmpi_cxx
+    LIBS += $(DFFTPACK_DIR)/gnu/libdfftpack.a -llapack -lmpi_cxx
     LDFLAGS = 
 endif
 
