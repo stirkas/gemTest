@@ -77,11 +77,7 @@ else
     endif
 
     LIBS += $(DFFTPACK_DIR)/gnu/libdfftpack.a
-    ifeq (${NERSC_HOST}, cori)
-        LIBS += /usr/lib64/lapack/liblapack.so.3 #There's probably a better way to do this...
-    else 
-        LIBS += ${LAPACK_LIB_DIR}/liblapack.so ${OMP_LIB_DIR}/libmpi_cxx.so
-    endif
+    LIBS += -llapack -lmpi_cxx
     LDFLAGS = 
 endif
 

@@ -6,10 +6,8 @@
 
 ### **Locally**
 
-Compiling on a local machine with the GNU compilers requires installing LAPACK and OpenMPI as well as setting the following environment variables by exporting them (in ~/.bashrc for instance):
+Compiling on a local machine with the GNU compilers requires installing LAPACK and OpenMPI as well as setting the following environment variable by exporting it (in ~/.bashrc for instance):
 
-* LAPACK_LIB_DIR
-* OMP_LIB_DIR
 * OMP_INC_DIR
 
 On systems with the apt package manager these can be installed using </br>
@@ -19,7 +17,7 @@ You can locate the directories using </br>
 `whereis openmpi` or, for lapack, `whereis lapack`
 
 Then set the correct environment variables in ~/.bashrc with </br>
-`export LAPACK_LIB_DIR="/path/to/LAPACK/lib/dir"`
+`export OMP_INC_DIR="/path/to/mpi/include/dir"`
 
 You will have to reopen any programs such as shells or Visual Studio Code to reload environment variables. Although for your bash shell you can also just type </br>
 `source ~/.bashrc`
@@ -30,9 +28,8 @@ Compiling on NERSC/Cori requires loading the correct modules for the following c
 
 * Cray:  `module load PrgEnv-cray`
 * Intel: `module load PrgEnv-intel impi`
-* GNU:   `module load PrgEnv-gnu openmpi`
 
-**Note:** Use `module swap PrgEnv-intel PrgEnvl-cray` if you need to swap rather than load. This also works with `module swap impi openmpi` for instance.
+**Note:** Use `module swap PrgEnv-intel PrgEnvl-cray` if you need to swap rather than load.
 
 ## Debugging
 
