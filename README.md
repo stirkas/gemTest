@@ -13,8 +13,7 @@ Compiling on a local machine with the GNU compilers requires installing LAPACK a
 On systems with the apt package manager these can be installed using </br>
 `sudo apt-get install libblas-dev liblapack-dev libopenmpi-dev`
 
-You can locate the directories using </br>
-`whereis openmpi` or, for lapack, `whereis lapack`
+You can locate the directories using `whereis openmpi` or, for lapack, `whereis lapack`
 
 Then set the correct environment variables in ~/.bashrc with </br>
 `export OMP_INC_DIR="/path/to/mpi/include/dir"`
