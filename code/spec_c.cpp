@@ -43,7 +43,7 @@ void spec_c_(int& n)
 
     for(int j = k;j < nsubd-k;j++)
     {
-        pf +=pfle_es_cptr[n][j]*vol_ptr[j]/totvol*x;
+        pf  += pfle_es_cptr[n][j]*vol_ptr[j]/totvol*x;
         efe += efle_es_cptr[n][j]*vol_ptr[j]/totvol*x;
         efi += efl_es_cptr[n][j][0]*vol_ptr[j]/totvol*x;
         pfi += pfl_es_cptr[n][j][0]*vol_ptr[j]/totvol*x;

@@ -1,5 +1,5 @@
 SRCS = gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_wrapper.f90 gem_gkps_adi.f90
-OBJS = gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o reporter_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
+OBJS = gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o reporter_c.o ppush_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
 PLIB = gem_pputil.o
 LIBS = -lstdc++
 INCS = -I"${OMP_INC_DIR}"
@@ -83,7 +83,7 @@ endif
 #all : gem
 
 gem_main: $(OBJS)
-	$(F90) -o gem_main $(OPT) $(OBJS) $(PLIB) $(LIBS)
+	$(F90) -o gem_main $(OPT) $(PLIB) $(OBJS) $(LIBS)
 
 gem_pputil.o: gem_pputil.f90
 	$(F90) -c $(OPT) gem_pputil.f90
@@ -123,6 +123,9 @@ spec_c.o: spec_c.cpp
 
 reporter_c.o: reporter_c.cpp
 	$(C++) -c $(OPT_C) reporter_c.cpp
+
+ppush_c.o: ppush_c.cpp
+	$(C++) -c $(OPT_C) ppush_c.cpp
 
 debug:
 	make DEBUG=1

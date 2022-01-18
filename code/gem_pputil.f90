@@ -48,7 +48,7 @@ CONTAINS
   SUBROUTINE init_pmove(xp, np, lz, ierr)
     !
     use mpi
-    !
+   ! 
     REAL, DIMENSION(:), INTENT(in) :: xp
     INTEGER, INTENT(in) :: np
     REAL, INTENT(in) :: lz

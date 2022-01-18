@@ -43,24 +43,28 @@ module gem_com
 
   integer :: mme,mmb
   REAL, dimension(:,:),allocatable :: rwx,rwy
-  INTEGER,dimension(:),allocatable :: mm,tmm,lr
+  INTEGER,target,dimension(:),allocatable :: mm,tmm,lr
+  type(c_ptr), bind(c) :: mm_ptr, lr_ptr
+
   integer :: micell,mecell !jycheng
   integer :: nonlin1,nonlin2 !jycheng
   real :: mims3,q3 !jycheng
   REAL,dimension(:),allocatable :: tets,mims,q
   REAL,dimension(:),allocatable :: kapn, kapt
+  type(c_ptr), bind(c) :: mims_ptr, q_ptr
+
   INTEGER :: timestep,im,jm,km,mykm,iseed,nrst,nfreq,isft,mynf,ifskp,iphbf,iapbf,idpbf
   real,dimension(:),allocatable :: time
   REAL, bind(c):: dx,dy,dz,pi,pi2,dt,dte,totvol,n0,n0e,tcurr,rmpp,rmaa,eprs
-  REAL :: lx,ly,lz,xshape,yshape,zshape,pzcrit(5),pzcrite,encrit,tot_field_e,tot_joule,tot_joule1
+  REAL, bind(c) :: lx,ly,lz,xshape,yshape,zshape,pzcrit(5),pzcrite,encrit,tot_field_e,tot_joule,tot_joule1
   INTEGER, bind(C) :: nm,nsm,kcnt,jcnt,ncurr,llk,mlk,onemd,iflr,iorb
   integer :: izonal,adiabatic_electron,ineq0,iflut,nlow,ntor0,mstart
-  REAL :: cut,amp,tor,amie,isg,rneu,rneui,emass,qel,mbeam,qbeam,teth,vexbsw,vparsw
+  REAL, bind(c):: cut,amp,tor,amie,isg,rneu,rneui,emass,qel,mbeam,qbeam,teth,vexbsw,vparsw
   REAL :: c4,fradi,kxcut,kycut,bcut,ftrap,adwn,adwe,adwp,frmax
   INTEGER, bind(c) :: iput,iget,idg,kzlook,ision,isiap,peritr,iadi,ipred,icorr,jpred,jcorr
   REAL,target, DIMENSION(:,:),allocatable :: yyamp,yyre,yyim
   complex,dimension(:,:),allocatable :: camp,campf
-  REAL :: br0,lr0,qp,width,e0,vwidth,vwidthe,vcut,vpp,vt0,yd0
+  REAL, bind(c) :: br0,lr0,qp,width,e0,vwidth,vwidthe,vcut,vpp,vt0,yd0
   integer, bind(c) :: nonlin(5),nonline,ipara,isuni,ifluid,ishift,nopz,nopi(5),noen,nowe
   complex :: IU
   real,dimension(:),allocatable :: coefx,coefy,coefz
@@ -87,24 +91,26 @@ module gem_com
   REAL,DIMENSION(:,:,:),allocatable :: rho,jion,jionx,jiony
   real,dimension(:,:,:),allocatable :: phi
   real,dimension(:,:,:),allocatable :: drhodt,dnedt,dphidt,drhoidt
-  REAL,DIMENSION(:,:,:),allocatable :: ex
-  REAL,DIMENSION(:,:,:),allocatable :: ey
-  REAL,DIMENSION(:,:,:),allocatable :: ez
-  REAL,DIMENSION(:,:,:),allocatable :: dpdz,dadz
-  REAL,DIMENSION(:,:,:),allocatable :: delbx,delby
+  REAL,target,DIMENSION(:,:,:),allocatable :: ex
+  REAL,target, DIMENSION(:,:,:),allocatable :: ey
+  REAL,target, DIMENSION(:,:,:),allocatable :: ez
+  REAL,target, DIMENSION(:,:,:),allocatable :: dpdz,dadz
+  REAL,target, DIMENSION(:,:,:),allocatable :: delbx,delby
   REAL,DIMENSION(:),allocatable :: xg,yg,zg
-  real,dimension(:,:,:),allocatable :: apar,dene
+  real,target, dimension(:,:,:),allocatable :: apar,dene
   real,dimension(:,:,:),allocatable :: upar,upart,delte
   real,dimension(:,:,:),allocatable :: upex,upey,upa0,den0,upazd,upa00,upa0t,den0apa
   real,dimension(:,:),allocatable :: cfx,cfy,jac,bmag,bdgxcgy,bdgrzn,ggxdgy,ggy2,ggx
   real,target, dimension(:),allocatable :: gn0e,gt0e,gt0i,avap 
   real,dimension(:,:),allocatable :: gn0s
-
+  type(c_ptr), bind(c) :: phi_ptr, ex_ptr, ey_ptr, ez_ptr, dpdz_ptr, dadz_ptr, delbx_ptr, delby_ptr, apar_ptr
   !          particle array declarations
-  REAL,DIMENSION(:,:),allocatable :: mu,xii,pzi,eki,z0i,u0i
-  REAL,DIMENSION(:,:),allocatable :: x2,y2,z2,u2
-  REAL,DIMENSION(:,:),allocatable :: x3,y3,z3,u3
-  REAL,DIMENSION(:,:),allocatable :: w2,w3
+  REAL,target,DIMENSION(:,:),allocatable :: mu,xii,pzi,eki,z0i,u0i
+  REAL,target,DIMENSION(:,:),allocatable :: x2,y2,z2,u2
+  REAL,target,DIMENSION(:,:),allocatable :: x3,y3,z3,u3
+  REAL,target,DIMENSION(:,:),allocatable :: w2,w3
+  type(c_ptr), bind(c) :: x2_ptr, z2_ptr, u2_ptr, mu_ptr, y2_ptr, w3_ptr, w2_ptr, pzi_ptr, xii_ptr, z0i_ptr, uoi_ptr, u3_ptr, x3_ptr, y3_ptr, z3_ptr, eki_ptr
+
 
   REAL,DIMENSION(:),allocatable :: mue,xie,pze,eke,z0e,u0e
   REAL,DIMENSION(:),allocatable :: x2e,y2e,z2e,u2e,mue2
@@ -299,6 +305,7 @@ contains
      mdhisb_ptr = c_loc(mdhisb(1))
      mdhisc_ptr = c_loc(mdhisc(1))
      mdhisd_ptr = c_loc(mdhisd(1))
+     lr_ptr = c_loc(lr(1))
 
      !spec 2d arrays
      pfle_es_ptr = c_loc(pfle_es(1,0))
@@ -312,11 +319,43 @@ contains
      efle_em_ptr = c_loc(efle_em(1,0))
      pfle_em_ptr = c_loc(pfle_em(1,0))
 
+     x2_ptr = c_loc(x2(1,1))
+     z2_ptr = c_loc(z2(1,1))
+     u2_ptr = c_loc(u2(1,1))
+     mu_ptr = c_loc(mu(1,1))
+     y2_ptr = c_loc(y2(1,1))
+     w3_ptr = c_loc(w3(1,1))
+     w2_ptr = c_loc(w2(1,1))
+     pzi_ptr = c_loc(pzi(1,1))
+     xii_ptr = c_loc(xii(1,1))
+     uoi_ptr = c_loc(u0i(1,1))
+     u3_ptr = c_loc(u3(1,1))
+     x3_ptr = c_loc(x3(1,1))
+     y3_ptr = c_loc(y3(1,1))
+     z3_ptr = c_loc(z3(1,1))
+     eki_ptr = c_loc(eki(1,1))
+
+
+
+
      !spec 3d arrays
      pfl_es_ptr = c_loc(pfl_es(1,1,0))
      efl_es_ptr = c_loc(efl_es(1,1,0))
      efl_em_ptr = c_loc(efl_em(1,1,0))
      pfl_em_ptr = c_loc(pfl_em(1,1,0))
+
+     ex_ptr = c_loc(ex(0,0,0))
+     ey_ptr = c_loc(ey(0,0,0))
+     ez_ptr = c_loc(ez(0,0,0))
+
+     delbx_ptr = c_loc(delbx(0,0,0))
+     delby_ptr = c_loc(delby(0,0,0))
+     dpdz_ptr = c_loc(dpdz(0,0,0))
+     dadz_ptr = c_loc(dadz(0,0,0))
+     apar_ptr = c_loc(ex(0,0,0))
+
+
+
 
 
 

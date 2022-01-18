@@ -1,20 +1,20 @@
 MODULE gem_equil
    use iso_c_binding
   IMPLICIT NONE
-  integer :: itube,ibase,iperi,iperidf,ibunit,icandy=1,isprime=0,ildu=0,eldu=0
+  integer, bind(c) :: itube,ibase,iperi,iperidf,ibunit,icandy=1,isprime=0,ildu=0,eldu=0
   real, bind(c) :: mimp=2,mcmp=12,chgi=1,chgc=6
-  real :: elon0=1.0,tria0=0.0,rmaj0=500.0,r0,a=180.0,selon0=0.0,&
+  real, bind(c):: elon0=1.0,tria0=0.0,rmaj0=500.0,r0,a=180.0,selon0=0.0,&
              stria0=0.0,rmaj0p=-0.0,q0p=0.006,q0=1.4, elonp0=0.,triap0=0.,erp=0.01,er0=0.,q0abs
   real, bind(c) :: beta,Rovera,shat0,teti,tcti,rhoia,Rovlni,Rovlti,Rovlne,Rovlte,Rovlnc,Rovltc,ncne,nuacs
   real :: gamma_E,mach
   real :: f0, f0p,bunit
-  real :: rin,rout,dr,dth,delz,jacmax,eadj
+  real, bind(c) :: rin,rout,dr,dth,delz,jacmax,eadj
   real,bind(c):: cn0e,cn0i,cn0b,cn0c,n0emax,n0imax,n0bmax,n0cmax
   real :: r0a,lxa,lymult,delra,delri,delre,delrn,rina,routa,betai, &
                tir0,xnir0,xu,frequ,vu,eru
 
   integer, bind(c) :: nr=256,nr2=150,ntheta=100,idiag=0
-  real,dimension(:,:),allocatable :: bfld,qhat,radius,gr,gth,grdgt,grcgt, &
+  real,target,dimension(:,:),allocatable :: bfld,qhat,radius,gr,gth,grdgt,grcgt, &
                                         gxdgy,dydr,dbdr,dbdth,dqhdr,jacob, &
                                         yfn,hght,thflx
   real,target,dimension(:),allocatable:: rmaj,rmajp,elon,selon,tria,stria, psi,&
@@ -32,19 +32,22 @@ MODULE gem_equil
                                       dldr,dldt,drhdr,drhdt,dbdl,dbdrho, &
                                       db2dl,db2drho,dbpsdl,dipdr, &
                                       rdtemp
-  type(c_ptr), bind(C) :: xn0e_ptr, t0e_ptr
+  type(c_ptr), bind(C) :: xn0e_ptr, t0e_ptr, thfnz_ptr,dbdr_ptr, dbdth_ptr, grcgt_ptr, bfld_ptr, radius_ptr, dydr_ptr, qhat_ptr, gr_ptr, gxdgy_ptr, grdgt_ptr, f_ptr, jfn_ptr, psip_ptr, phincp_ptr, dipdr_ptr, sf_ptr
 
 !for Miller local flux-tube
   real :: candyf0p
   real,dimension(:),allocatable :: candyd0,candyd1,candyd2,candynus,candynu1,candydr
 
 !for including bstar effects
-  real,dimension(:),allocatable :: psip2
-  real,dimension(:,:),allocatable :: curvbz,srbr,srbz,thbr,thbz,prsrbr,prsrbz,pthsrbr,pthsrbz,bdcrvb
+  real,target,dimension(:),allocatable :: psip2
+  real,target,dimension(:,:),allocatable :: curvbz,srbr,srbz,thbr,thbz,prsrbr,prsrbz,pthsrbr,pthsrbz,bdcrvb
+  type(c_ptr), bind(C) :: curvbz_ptr, bdcrvb_ptr, psip2_ptr
 
-  real,dimension(:,:),allocatable :: t0s,xn0s,capts,capns,vpars,vparsp
-  real,dimension(:),allocatable :: cn0s,n0smax,tgis
+  real,target, dimension(:,:),allocatable :: t0s,xn0s,capts,capns,vpars,vparsp
+  type(c_ptr), bind(C) :: t0s_ptr, capts_ptr, capns_ptr, xn0s_ptr, vparsp_ptr
+  real,target,dimension(:),allocatable :: cn0s,n0smax,tgis
   real :: tge
+  type(c_ptr), bind(c) :: tgis_ptr
   character(len=32) :: trflnm ! profile-data-file name
 !  real,external :: erf
 
@@ -704,7 +707,36 @@ contains
 
       xn0e_ptr = c_loc(xn0e(0))
       t0e_ptr  = c_loc(t0e(0))
-      call new_gem_equil_c()
+      thfnz_ptr = c_loc(thfnz(0))
+      f_ptr = c_loc(f(0))
+      jfn_ptr = c_loc(jfn(0))
+      psip_ptr = c_loc(psip(0))
+      phincp_ptr = c_loc(phincp(0))
+      psip2_ptr = c_loc(psip2(0))
+      dipdr_ptr = c_loc(dipdr(0))
+      tgis_ptr = c_loc(tgis(1))
+      sf_ptr = c_loc(sf(0))
+
+      dbdr_ptr = c_loc(dbdr(0,0))
+      dbdth_ptr = c_loc(dbdth(0,0))
+      grcgt_ptr = c_loc(grcgt(0,0))
+      bfld_ptr = c_loc(bfld(0,0))
+      radius_ptr = c_loc(radius(0,0))
+      dydr_ptr = c_loc(dydr(0,0))
+      qhat_ptr = c_loc(qhat(0,0))
+      gr_ptr = c_loc(gr(0,0))
+      gxdgy_ptr = c_loc(gxdgy(0,0))
+      curvbz_ptr = c_loc(curvbz(0,0))
+      bdcrvb_ptr = c_loc(bdcrvb(0,0))
+      grcgt_ptr = c_loc(grcgt(0,0))
+      t0s_ptr = c_loc(t0s(1,1))
+      capts_ptr = c_loc(capts(1,1))
+      capns_ptr = c_loc(capns(1,1))
+      xn0s_ptr = c_loc(xn0s(1,1))
+      vparsp_ptr = c_loc(vparsp(1,1))
+
+
+      call new_gem_equil_c(s)
 
   end subroutine new_equil
 

@@ -25,3 +25,6 @@ dfftpack/src/*.so
 
 #ipynb notebook stuff for NERSC's remote Jupyter use.
 **/.ipynb_checkpoints
+
+#VScode logs
+.vscode/*.log
