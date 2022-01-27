@@ -235,13 +235,14 @@ void ppush_c_(int& n,int& ns)
         x3_cptr[m][ns] = min(x3_cptr[m][ns],lx-1.0e-8);
         y3_cptr[m][ns] = min(y3_cptr[m][ns],ly-1.0e-8);
         z3_cptr[m][ns] = min(z3_cptr[m][ns],lz-1.0e-8);
-    }
     
+    }
+
     ierr = MPI_Allreduce(&mynopi,nopi+ns,1,MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
 
     np_old == mm_ptr[ns];
 
-    init_pmove_(z3_cptr[ns],np_old, lz, ierr);
+    init_pmove_(z3_ptr[ns],np_old, lz, ierr);
 
     pmove_(x2_cptr[ns],np_old,np_new,ierr);
     if(ierr != 0)

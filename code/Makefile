@@ -1,5 +1,5 @@
 SRCS = gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_wrapper.f90 gem_gkps_adi.f90
-OBJS = gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o reporter_c.o ppush_c.o gem_main.o gem_outd.o gem_fcnt_c.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
+OBJS = gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o gem_fcnt_c.o spec_c.o reporter_c.o ppush_c.o gem_main.o gem_outd.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
 PLIB = gem_pputil.o
 LIBS = -lstdc++
 INCS = -I"${OMP_INC_DIR}"
@@ -109,8 +109,8 @@ gem_main.o: gem_main.f90 gem_fft_wrapper.o gem_pputil.o gem_com.o gem_equil.o ge
 gem_outd.o: gem_outd.f90 gem_fft_wrapper.o gem_pputil.o gem_com.o gem_equil.o 
 	$(F90) -c $(OPT) gem_outd.f90
 
-gem_fcnt_c.o: gem_fcnt_c.cpp
-	$(C++) -c $(OPT_C) gem_fcnt_c.cpp
+#gem_fcnt_c.o: gem_fcnt_c.cpp
+#	$(C++) -c $(OPT_C) gem_fcnt_c.cpp
 
 gem_fcnt_f.o: gem_fcnt_f.f90
 	$(F90) -c $(OPT) gem_fcnt_f.f90
@@ -126,6 +126,9 @@ reporter_c.o: reporter_c.cpp
 
 ppush_c.o: ppush_c.cpp
 	$(C++) -c $(OPT_C) ppush_c.cpp
+
+gem_fcnt_c.o: gem_fcnt_c.cpp
+	$(C++) -c $(OPT_C) gem_fcnt_c.cpp
 
 debug:
 	make DEBUG=1

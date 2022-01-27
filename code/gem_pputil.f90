@@ -1,6 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 MODULE gem_pputil
+
+   use iso_c_binding
 !
 !  use fft_wrapper
   IMPLICIT NONE
@@ -45,7 +47,7 @@ MODULE gem_pputil
 CONTAINS
 !
 !===========================================================================
-  SUBROUTINE init_pmove(xp, np, lz, ierr)
+  SUBROUTINE init_pmove(xp, np, lz, ierr) bind(c, name = 'init_pmove_')
     !
     use mpi
    ! 
@@ -151,7 +153,7 @@ CONTAINS
     !
   END SUBROUTINE init_pmove
 !===========================================================================
-  SUBROUTINE pmove(xp, np_old, np_new, ierr)
+  SUBROUTINE pmove(xp, np_old, np_new, ierr) bind(c, name='pmove_')
 !
     use mpi
 !
@@ -260,7 +262,7 @@ CONTAINS
 !----------------------------------------------------------------------!
   END SUBROUTINE pmove
 !===========================================================================
-  SUBROUTINE end_pmove(ierr)
+  SUBROUTINE end_pmove(ierr) bind(c, name='end_pmove_')
 !
     use mpi
 
@@ -377,7 +379,7 @@ subroutine ppinit_decomp(mype,nproc,ntube,com1,com2)
   nvp=nproc/ntube
 end subroutine ppinit_decomp
 !===========================================================================
-  SUBROUTINE ppexit
+  SUBROUTINE ppexit() bind(c, name='ppexit_')
     INTEGER :: ierr
     CALL MPI_FINALIZE(ierr)
     STOP

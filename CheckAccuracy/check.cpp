@@ -44,15 +44,15 @@ void fileCheck(string fileName1, string fileName2)
 int main()
 {
     cout << "run.out compare" << endl;
-    fileCheck("runSCRBES.out", "runSPEC.out");
+    fileCheck("runOriginal.out", "runPPUSHTEST.out");
 
     cout << "plot compare" << endl;
-    fileCheck("plotOriginal", "plotSPEC");
+    fileCheck("plotOriginal", "plotPPUSH");
 
      cout << "flux compare" << endl;
-     fileCheck("fluxSCRBES", "fluxSPEC");
+     fileCheck("fluxOriginal", "fluxPPUSH");
 
      cout << "yyre compare" << endl;
-     fileCheck("yyreSCRBES","yyreOriginal");
+     fileCheck("yyreOriginal","yyrePPUSH");
     return 0;
 }

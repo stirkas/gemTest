@@ -1,4 +1,5 @@
 #pragma once
+#include <mpi.h>
 
 extern "C"
 {
@@ -12,11 +13,11 @@ extern "C"
 
     void ppush_c_(int& n, int& ns);
 
-    void init_pmove_(double* xp, int np, double lz, int ierr);
+    //pputil functions
+
+    void init_pmove_(double const &xp, int const &np, double const &lz, int &ierr);
 
     void pmove_(double * xp, int &np_old, int &np_new, int &ierr);
-
-    //pputil functions
 
     void ppexit_();
 
