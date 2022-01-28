@@ -1,12 +1,3 @@
 {
-    "makefile.extensionOutputFolder": "./.vscode",
-    "files.associations": {
-        "ostream": "cpp",
-        "fstream": "cpp",
-        "iostream": "cpp",
-        "iomanip": "cpp",
-        "iosfwd": "cpp",
-        "complex": "cpp"
-    },
-    "C_Cpp.default.includePath": ["${env:OMP_INC_DIR}"]
+   "C_Cpp.default.includePath": ["${env:OMP_INC_DIR}"]
 }
