@@ -306,6 +306,7 @@ contains
      mdhisc_ptr = c_loc(mdhisc(1))
      mdhisd_ptr = c_loc(mdhisd(1))
      lr_ptr = c_loc(lr(1))
+     mm_ptr = c_loc(mm(1))
 
      !spec 2d arrays
      pfle_es_ptr = c_loc(pfle_es(1,0))

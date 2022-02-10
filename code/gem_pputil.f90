@@ -73,6 +73,7 @@ CONTAINS
     !----------------------------------------------------------------------
     !              1.  Construct send buffer
     !
+
     dzz = lz / nvp
     s_counts = 0
     DO ip = 1,np
@@ -127,6 +128,7 @@ CONTAINS
     DO i=1,nvp-1
        r_displ(i) = r_displ(i-1) + r_counts(i-1)
     END DO
+
     !
     nsize = sum(r_counts)
     IF( .not. ALLOCATED(r_buf) ) THEN

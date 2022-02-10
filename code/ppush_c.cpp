@@ -244,84 +244,86 @@ void ppush_c_(int& n,int& ns)
 
     init_pmove_(z3_ptr[ns],np_old, lz, ierr);
 
-    pmove_(x2_cptr[ns],np_old,np_new,ierr);
+    std::cout << "working" << std::endl;
+
+    pmove_(x2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(x3_cptr[ns],np_old,np_new,ierr);
+    pmove_(x3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
     
-    pmove_(y2_cptr[ns],np_old,np_new,ierr);
+    pmove_(y2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(y3_cptr[ns],np_old,np_new,ierr);
+    pmove_(y3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(z2_cptr[ns],np_old,np_new,ierr);
+    pmove_(z2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(z3_cptr[ns],np_old,np_new,ierr);
+    pmove_(z3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(u2_cptr[ns],np_old,np_new,ierr);
+    pmove_(u2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(u3_cptr[ns],np_old,np_new,ierr);
+    pmove_(u3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(w2_cptr[ns],np_old,np_new,ierr);
+    pmove_(w2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(w3_cptr[ns],np_old,np_new,ierr);
+    pmove_(w3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(mu_cptr[ns],np_old,np_new,ierr);
+    pmove_(mu_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
 
-    pmove_(xii_cptr[ns],np_old,np_new,ierr);
+    pmove_(xii_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(z0i_cptr[ns],np_old,np_new,ierr);
+    pmove_(z0i_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(pzi_cptr[ns],np_old,np_new,ierr);
+    pmove_(pzi_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(eki_cptr[ns],np_old,np_new,ierr);
+    pmove_(eki_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(uoi_cptr[ns],np_old,np_new,ierr);
+    pmove_(uoi_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();

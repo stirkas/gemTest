@@ -10,37 +10,37 @@ program gem_main
   implicit none
 
   interface
-    subroutine srcbes(cbiz,cgam0,cgam1) bind(c)
+    subroutine srcbes(cbiz,cgam0,cgam1) bind(c, name = 'srcbes_c_')
       use iso_c_binding
       real (c_double) :: cbiz,cgam0,cgam1
     end subroutine srcbes
 
-    subroutine spec_c(n) bind(C)
+    subroutine spec_c(n) bind(C, name = 'spec_c_')
       use iso_c_binding
       integer(c_int) :: n
     end subroutine spec_c
 
-    subroutine reporter_c(n) bind(c)
+    subroutine reporter_c(n) bind(c, name = 'reporter_c_')
       use iso_c_binding
       integer(c_int) :: n 
     end subroutine reporter_c
 
-    subroutine reportertest(n) bind(c)
-      use iso_c_binding
-      integer(c_int) :: n
-    end subroutine reportertest
+    !subroutine reportertest(n) bind(c)
+    !  use iso_c_binding
+    !  integer(c_int) :: n
+    !end subroutine reportertest
 
-    subroutine ppush_c(n,ns) bind(c)
+    subroutine ppush_c(n,ns) bind(c, name = 'ppush_c_')
       use iso_c_binding
       integer(c_int) :: n, ns
     end subroutine
 
     !TODO: Move into the right modules.
-    subroutine new_gem_com_c() bind(c)
+    subroutine new_gem_com_c() bind(c, name = 'new_gem_com_c_')
        use iso_c_binding
     end subroutine new_gem_com_c
 
-    subroutine new_gem_equil_c() bind(c)
+    subroutine new_gem_equil_c() bind(c, name = 'new_gem_equil_c_')
      use iso_c_binding
     end subroutine new_gem_equil_c
 
@@ -67,14 +67,14 @@ program gem_main
 
   do  timestep=ncurr,nm
      tcurr = tcurr+dt
-
+     
      call accumulate(timestep-1,0)
      call ampere(timestep-1,0)
      call poisson(timestep-1,0)
      call field(timestep-1,0)
      call split_weight(timestep-1,0)
      call diagnose(timestep-1)
-     call reporter(timestep-1)
+     call reporter_c(timestep-1)
 
      call push_wrapper(timestep,1)
 
@@ -5059,11 +5059,11 @@ subroutine diagnose(n)
 
 end subroutine diagnose
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-subroutine reporter(n)
-  use gem_com
-  use gem_equil
-  implicit none
-  integer :: n,i,j,k,ip
+!subroutine reporter(n)
+!  use gem_com
+!  use gem_equil
+!  implicit none
+!  integer :: n,i,j,k,ip
 !
 !  if(mod(n,xnplt).eq.0) then
 !     call spec_c(n)
@@ -5075,7 +5075,7 @@ subroutine reporter(n)
 !     close(16)
 !  end if
 
-  call reporter_c(n)
+  !call reporter_c(n)
   !        if(myid==0)write(*,13)n,ipred,icorr,jpred,jcorr,nopz,noen
   !call MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
@@ -5089,7 +5089,7 @@ subroutine reporter(n)
 
  ! call reportertest(n)
 
-end subroutine reporter
+!end subroutine reporter
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 subroutine jpar0(ip,n,it,itp)

@@ -1,5 +1,5 @@
 SRCS = gem_com.f90 gem_equil.f90 gem_main.f90 gem_outd.f90 gem_fcnt.f90 gem_fft_wrapper.f90 gem_gkps_adi.f90
-OBJS = gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o gem_fcnt_c.o spec_c.o reporter_c.o ppush_c.o gem_main.o gem_outd.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
+OBJS = gem_com.o gem_equil.o gem_com_c.o gem_equil_c.o spec_c.o reporter_c.o ppush_c.o gem_fcnt_c.o gem_main.o gem_outd.o gem_fcnt_f.o gem_fft_wrapper.o gem_gkps_adi.o
 PLIB = gem_pputil.o
 LIBS = -lstdc++
 INCS = -I"${OMP_INC_DIR}"
@@ -71,7 +71,7 @@ else
         OPT   = $(OPT_COMMON)   -O3
         OPT_C = $(OPT_C_COMMON) -O3
     else
-        OPT_DEBUG_COMMON = -O2 -g -fcheck=all -fbacktrace -Wall
+        OPT_DEBUG_COMMON = -O0 -g -fcheck=all -fbacktrace -Wall
         OPT   = $(OPT_COMMON)   $(OPT_DEBUG_COMMON)
         OPT_C = $(OPT_C_COMMON) $(OPT_DEBUG_COMMON)
     endif

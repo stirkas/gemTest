@@ -19,6 +19,7 @@ void spec_c_(int& n)
     double tdum;
     double v[imx];
 
+
     eflxgb = xn0e_ptr[nr2]*cn0e*t0e_ptr[nr2]*sqrt(t0e_ptr[nr2]/mimp)*pow(rhoia,2);
     pflxgb = eflxgb/t0e_ptr[nr2];
     i = tcurr-dt;
@@ -41,11 +42,11 @@ void spec_c_(int& n)
     k = 2;
     x = float(nsubd)/float(nsubd-2*k);
 
-    for(int j = k;j < nsubd-k;j++)
+    for(int j = 1+k;j < nsubd-k;j++)
     {
-        pf  += pfle_es_cptr[n][j]*vol_ptr[j]/totvol*x;
+        pf  += pfle_es_cptr[n][j]*vol_ptr[j-1]/totvol*x;
         efe += efle_es_cptr[n][j]*vol_ptr[j]/totvol*x;
-        efi += efl_es_cptr[n][j][0]*vol_ptr[j]/totvol*x;
+        efi += efl_es_cptr[0][j][n]*vol_ptr[j]/totvol*x;
         pfi += pfl_es_cptr[n][j][0]*vol_ptr[j]/totvol*x;
         efc += efl_es_cptr[n][j][1]*vol_ptr[j]/totvol*x;
         pfc += pfl_es_cptr[n][j][1]*vol_ptr[j]/totvol*x;
@@ -107,8 +108,8 @@ void spec_c_(int& n)
         if(yyreFile.is_open())
         {
             yyreFile << scientific << setprecision(5) << setfill(' ') << uppercase;
-            yyreFile << setw(7) << i;
-            yyreFile << setw(14) << yyre_cptr[0][0] << setw(14) << yyre_cptr[1][0]<< setw(14) << yyre_cptr[2][0] << setw(14) << yyre_cptr[3][0] << setw(14) << yyre_cptr[4][0];
+            yyreFile << "what the fuck" << setw(7) << i;
+            yyreFile << setw(14) << yyre_cptr[0][0] << setw(14) << yyre_cptr[1][0]<< setw(14) << yyre_cptr[2][0] << setw(14) << yyre_cptr[3][0] << setw(14) << yyre_cptr[4][0] << "why";
             yyreFile << endl;
         }
         
