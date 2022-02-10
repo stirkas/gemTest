@@ -242,6 +242,8 @@ void ppush_c_(int& n,int& ns)
 
     np_old == mm_ptr[ns];
 
+    cout <<ierr<< endl;
+
     init_pmove_(z3_ptr[ns],np_old, lz, ierr);
 
     std::cout << "working" << std::endl;

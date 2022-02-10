@@ -71,7 +71,7 @@ else
         OPT   = $(OPT_COMMON)   -O3
         OPT_C = $(OPT_C_COMMON) -O3
     else
-        OPT_DEBUG_COMMON = -O0 -g -fcheck=all -fbacktrace -Wall
+        OPT_DEBUG_COMMON = -O2 -g -fcheck=all -fbacktrace -Wall
         OPT   = $(OPT_COMMON)   $(OPT_DEBUG_COMMON)
         OPT_C = $(OPT_C_COMMON) $(OPT_DEBUG_COMMON)
     endif
