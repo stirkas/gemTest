@@ -5,6 +5,7 @@ MODULE gem_pputil
    use iso_c_binding
 !
 !  use fft_wrapper
+   use iso_c_binding
   IMPLICIT NONE
   PRIVATE
   PUBLIC :: ppinit_mpi,ppinit_decomp,ppexit, init_pmove,end_pmove,pmove,guard

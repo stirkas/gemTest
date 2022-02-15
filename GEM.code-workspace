@@ -4,4 +4,8 @@
          "path": "."
       }
    ],
+   "settings": {
+      "C_Cpp.autoAddFileAssociations": false,
+      "C_Cpp.default.includePath": ["${env:OMP_INC_DIR}"]
+   },
 }

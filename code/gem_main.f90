@@ -44,6 +44,11 @@ program gem_main
      use iso_c_binding
     end subroutine new_gem_equil_c
 
+    subroutine ppush_c(n, ns) bind(c)
+      use iso_c_binding
+      integer(c_int) :: n, ns
+    end subroutine ppush_c
+
    end interface
   
   integer :: n,i,j,k,ip
@@ -561,8 +566,6 @@ end subroutine init
 !  real :: grp,gxdgyp,rhox(4),rhoy(4),psp,pzp,vncp,vparspp,psip2p,bdcrvbp,curvbzp,dipdrp
 !  integer :: mynopi
 !
-!  
-!
 !  pidum = 1./(pi*2)**1.5*vwidth**3
 !  mynopi = 0
 !  nopi(ns) = 0
@@ -644,8 +647,6 @@ end subroutine init
 !     aparp = 0.
 !
 !     !  4 pt. avg. done explicitly for vectorization...
-!
-!
 !     do l=1,lr(1)
 !        !
 !        xs=x2(ns,m)+rhox(l) !rwx(1,l)*rhog
@@ -788,16 +789,13 @@ end subroutine init
 !     y3(ns,m) = min(y3(ns,m),ly-1.0e-8)
 !     z3(ns,m) = min(z3(ns,m),lz-1.0e-8)
 !
-!   enddo
-!
+!  enddo
 !  call MPI_ALLREDUCE(mynopi,nopi(ns),1,MPI_integer, &
 !       MPI_SUM, MPI_COMM_WORLD,ierr)
 !
 !  np_old=mm(ns)
 !  call init_pmove(z3(ns,:),np_old,lz,ierr)
-!
 !  call ppush_c(n,ns)
-!
 !  call pmove(x2(ns,:),np_old,np_new,ierr)
 !  if (ierr.ne.0) call ppexit
 !  call pmove(x3(ns,:),np_old,np_new,ierr)
