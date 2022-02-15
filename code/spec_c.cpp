@@ -108,8 +108,8 @@ void spec_c_(int& n)
         if(yyreFile.is_open())
         {
             yyreFile << scientific << setprecision(5) << setfill(' ') << uppercase;
-            yyreFile << "what the fuck" << setw(7) << i;
-            yyreFile << setw(14) << yyre_cptr[0][0] << setw(14) << yyre_cptr[1][0]<< setw(14) << yyre_cptr[2][0] << setw(14) << yyre_cptr[3][0] << setw(14) << yyre_cptr[4][0] << "why";
+            yyreFile << setw(7) << i;
+            yyreFile << setw(14) << yyre_cptr[0][0] << setw(14) << yyre_cptr[1][0]<< setw(14) << yyre_cptr[2][0] << setw(14) << yyre_cptr[3][0] << setw(14) << yyre_cptr[4][0] ;
             yyreFile << endl;
         }
         

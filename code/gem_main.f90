@@ -44,11 +44,6 @@ program gem_main
      use iso_c_binding
     end subroutine new_gem_equil_c
 
-    subroutine ppush_c(n, ns) bind(c)
-      use iso_c_binding
-      integer(c_int) :: n, ns
-    end subroutine ppush_c
-
    end interface
   
   integer :: n,i,j,k,ip
@@ -550,21 +545,21 @@ end subroutine init
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-!subroutine ppush(n,ns)
-!
-!  use gem_com
-!  use gem_equil
-!  implicit none
-!  real :: phip,exp1,eyp,ezp,delbxp,delbyp,dpdzp,dadzp,aparp
-!  real :: wx0,wx1,wy0,wy1,wz0,wz1,dum,vxdum,dum1,bstar
-!  INTEGER :: m,i,j,k,l,n,ns
-!  INTEGER :: np_old,np_new
-!  real :: rhog,vfac,kap,vpar,pidum,kaptp,kapnp,xnp
-!  real :: b,th,r,enerb,cost,sint,qr,laps,sz,ter
-!  real :: xt,xs,yt,xdot,ydot,zdot,pzdot,edot,pzd0,vp0
-!  real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
-!  real :: grp,gxdgyp,rhox(4),rhoy(4),psp,pzp,vncp,vparspp,psip2p,bdcrvbp,curvbzp,dipdrp
-!  integer :: mynopi
+subroutine ppush(n,ns)
+
+  use gem_com
+  use gem_equil
+  implicit none
+  real :: phip,exp1,eyp,ezp,delbxp,delbyp,dpdzp,dadzp,aparp
+  real :: wx0,wx1,wy0,wy1,wz0,wz1,dum,vxdum,dum1,bstar
+  INTEGER :: m,i,j,k,l,n,ns
+  INTEGER :: np_old,np_new
+  real :: rhog,vfac,kap,vpar,pidum,kaptp,kapnp,xnp
+  real :: b,th,r,enerb,cost,sint,qr,laps,sz,ter
+  real :: xt,xs,yt,xdot,ydot,zdot,pzdot,edot,pzd0,vp0
+  real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
+  real :: grp,gxdgyp,rhox(4),rhoy(4),psp,pzp,vncp,vparspp,psip2p,bdcrvbp,curvbzp,dipdrp
+  integer :: mynopi
 !
 !  pidum = 1./(pi*2)**1.5*vwidth**3
 !  mynopi = 0
@@ -790,51 +785,52 @@ end subroutine init
 !     z3(ns,m) = min(z3(ns,m),lz-1.0e-8)
 !
 !  enddo
-!  call MPI_ALLREDUCE(mynopi,nopi(ns),1,MPI_integer, &
-!       MPI_SUM, MPI_COMM_WORLD,ierr)
-!
-!  np_old=mm(ns)
-!  call init_pmove(z3(ns,:),np_old,lz,ierr)
-!  call ppush_c(n,ns)
-!  call pmove(x2(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(x3(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(y2(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(y3(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(z2(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(z3(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(u2(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(u3(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(w2(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(w3(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(mu(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!
-!  call pmove(xii(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(z0i(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(pzi(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(eki(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!  call pmove(u0i(ns,:),np_old,np_new,ierr)
-!  if (ierr.ne.0) call ppexit
-!
-!  call end_pmove(ierr)
-!  mm(ns)=np_new
-!
-!  !      return
-!end subroutine ppush
+  call ppush_c(n,ns)
+
+  call MPI_ALLREDUCE(mynopi,nopi(ns),1,MPI_integer, &
+       MPI_SUM, MPI_COMM_WORLD,ierr)
+
+  np_old=mm(ns)
+  call init_pmove(z3(ns,:),np_old,lz,ierr)
+  call pmove(x2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(x3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(y2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(y3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(z2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(z3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(u2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(u3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(w2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(w3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(mu(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+
+  call pmove(xii(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(z0i(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(pzi(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(eki(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(u0i(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+
+  call end_pmove(ierr)
+  mm(ns)=np_new
+
+  !      return
+end subroutine ppush
 !
 !-----------------------------------------------------------------------
 
@@ -5016,7 +5012,7 @@ subroutine push_wrapper(n,ip)
   integer :: n,i,j,k,ip,ns
 
   do ns = 1,nsm
-     if(ip.eq.1.and.ision==1)call ppush_c(n,ns)
+     if(ip.eq.1.and.ision==1)call ppush(n,ns)
      if(ip.eq.0.and.ision==1)call cpush(n,ns)
   end do
   if(ip==0)call colli(ip,n)

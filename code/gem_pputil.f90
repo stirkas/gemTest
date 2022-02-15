@@ -44,6 +44,7 @@ MODULE gem_pputil
   INTERFACE PPCFFT2
      MODULE PROCEDURE ppcfft2_2d, ppcfft2_3d
   END INTERFACE
+
 !
 CONTAINS
 !
@@ -74,6 +75,7 @@ CONTAINS
     !----------------------------------------------------------------------
     !              1.  Construct send buffer
     !
+    !print *, 1
 
     dzz = lz / nvp
     s_counts = 0
@@ -107,6 +109,7 @@ CONTAINS
     !----------------------------------------------------------------------
     !              2.  Construct (sorted) pointers to holes
     !
+    !print *, 2
     isb(0:nvp-1) = s_displ(0:nvp-1)
     ih = 0
     DO ip=1,np
@@ -123,6 +126,7 @@ CONTAINS
     !----------------------------------------------------------------------
     !              3.  Construct receive buffer
     !
+    !print *, 3
     CALL MPI_ALLTOALL(s_counts, 1, MPI_INTEGER, &
          & r_counts, 1, MPI_INTEGER, TUBE_COMM, ierr)
     r_displ(0) = 0
@@ -152,6 +156,7 @@ CONTAINS
     !----------------------------------------------------------------------
     !              4.  Initialize tag
     !
+    !print *, 4
     pmove_tag = 101
     !
   END SUBROUTINE init_pmove

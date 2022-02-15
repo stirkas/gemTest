@@ -14,8 +14,8 @@ extern "C"
     void ppush_c_(int& n, int& ns);
 
     //pputil functions
-
-    void init_pmove_(double & xp, int & np, double & lz, int & ierr);
+    
+    void init_pmove_(double* xp, int np, double lz, int ierr);
 
     void pmove_(double & xp, int & np_old, int & np_new, int & ierr);
 
