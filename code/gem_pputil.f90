@@ -1,8 +1,11 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 MODULE gem_pputil
+
+   use iso_c_binding
 !
 !  use fft_wrapper
+   use iso_c_binding
   IMPLICIT NONE
   PRIVATE
   PUBLIC :: ppinit_mpi,ppinit_decomp,ppexit, init_pmove,end_pmove,pmove,guard
@@ -45,7 +48,7 @@ MODULE gem_pputil
 CONTAINS
 !
 !===========================================================================
-  SUBROUTINE init_pmove(xp, np, lz, ierr)
+  SUBROUTINE init_pmove(xp, np, lz, ierr) bind(c, name = 'init_pmove_')
     !
     use mpi
    ! 
@@ -71,6 +74,7 @@ CONTAINS
     !----------------------------------------------------------------------
     !              1.  Construct send buffer
     !
+
     dzz = lz / nvp
     s_counts = 0
     DO ip = 1,np
@@ -125,6 +129,7 @@ CONTAINS
     DO i=1,nvp-1
        r_displ(i) = r_displ(i-1) + r_counts(i-1)
     END DO
+
     !
     nsize = sum(r_counts)
     IF( .not. ALLOCATED(r_buf) ) THEN
@@ -151,7 +156,7 @@ CONTAINS
     !
   END SUBROUTINE init_pmove
 !===========================================================================
-  SUBROUTINE pmove(xp, np_old, np_new, ierr)
+  SUBROUTINE pmove(xp, np_old, np_new, ierr) bind(c, name='pmove_')
 !
     use mpi
 !
@@ -260,7 +265,7 @@ CONTAINS
 !----------------------------------------------------------------------!
   END SUBROUTINE pmove
 !===========================================================================
-  SUBROUTINE end_pmove(ierr)
+  SUBROUTINE end_pmove(ierr) bind(c, name='end_pmove_')
 !
     use mpi
 
@@ -377,7 +382,7 @@ subroutine ppinit_decomp(mype,nproc,ntube,com1,com2)
   nvp=nproc/ntube
 end subroutine ppinit_decomp
 !===========================================================================
-  SUBROUTINE ppexit
+  SUBROUTINE ppexit() bind(c, name='ppexit_')
     INTEGER :: ierr
     CALL MPI_FINALIZE(ierr)
     STOP

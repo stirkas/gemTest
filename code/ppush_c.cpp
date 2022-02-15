@@ -235,92 +235,97 @@ void ppush_c_(int& n,int& ns)
         x3_cptr[m][ns] = min(x3_cptr[m][ns],lx-1.0e-8);
         y3_cptr[m][ns] = min(y3_cptr[m][ns],ly-1.0e-8);
         z3_cptr[m][ns] = min(z3_cptr[m][ns],lz-1.0e-8);
-    }
     
+    }
+
     ierr = MPI_Allreduce(&mynopi,nopi+ns,1,MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD);
 
     np_old == mm_ptr[ns];
 
-    init_pmove_(z3_cptr[ns],np_old, lz, ierr);
+    cout <<ierr<< endl;
 
-    pmove_(x2_cptr[ns],np_old,np_new,ierr);
+    init_pmove_(z3_ptr[ns],np_old, lz, ierr);
+
+    std::cout << "working" << std::endl;
+
+    pmove_(x2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(x3_cptr[ns],np_old,np_new,ierr);
+    pmove_(x3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
     
-    pmove_(y2_cptr[ns],np_old,np_new,ierr);
+    pmove_(y2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(y3_cptr[ns],np_old,np_new,ierr);
+    pmove_(y3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(z2_cptr[ns],np_old,np_new,ierr);
+    pmove_(z2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(z3_cptr[ns],np_old,np_new,ierr);
+    pmove_(z3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(u2_cptr[ns],np_old,np_new,ierr);
+    pmove_(u2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(u3_cptr[ns],np_old,np_new,ierr);
+    pmove_(u3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(w2_cptr[ns],np_old,np_new,ierr);
+    pmove_(w2_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(w3_cptr[ns],np_old,np_new,ierr);
+    pmove_(w3_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(mu_cptr[ns],np_old,np_new,ierr);
+    pmove_(mu_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
 
-    pmove_(xii_cptr[ns],np_old,np_new,ierr);
+    pmove_(xii_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(z0i_cptr[ns],np_old,np_new,ierr);
+    pmove_(z0i_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(pzi_cptr[ns],np_old,np_new,ierr);
+    pmove_(pzi_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(eki_cptr[ns],np_old,np_new,ierr);
+    pmove_(eki_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
     }
-    pmove_(uoi_cptr[ns],np_old,np_new,ierr);
+    pmove_(uoi_ptr[ns],np_old,np_new,ierr);
     if(ierr != 0)
     {
         ppexit_();
