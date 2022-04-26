@@ -25,7 +25,7 @@ void TimerClass::startimer()
     t1 = Clock::now();
 }
 
-extern "C" void TimerClass::stoptimer()
+void TimerClass::stoptimer()
 {
     t2 = Clock::now();
     times.push_back(t2-t1);

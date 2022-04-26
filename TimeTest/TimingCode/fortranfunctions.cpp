@@ -6,28 +6,43 @@ using namespace std;
 
 extern "C"
 {
-    void initptr()
+    void initptr(TimerClass *ptrtimer)
     {
-        TimerClass timer;
+        if(NULL != ptrtimer)
+        {
+            TimerClass timer;
 
-        TimerClass *ptrtimer;
-
-        ptrtimer = &timer;
+            ptrtimer = &timer;
+        }
+    
+        
     }
 
     void savetimesf(TimerClass *ptrtimer)
     {
-        ptrtimer->savetimes("fortrantimes.txt");
+        if(NULL != ptrtimer)
+        {
+            ptrtimer->savetimes("fortrantimes.txt");
+        }
+        
     }
 
     void starttimerf(TimerClass *ptrtimer)
     {
-        ptrtimer->startimer();
+        if(NULL != ptrtimer)
+        {
+            ptrtimer->startimer();
+        }
+        
     }
 
     void stoptimerf(TimerClass *ptrtimer)
     {
-        ptrtimer->stoptimer();
+        if(NULL!= ptrtimer)
+        {
+           ptrtimer->stoptimer(); 
+        }
+        
     }
 }
 
