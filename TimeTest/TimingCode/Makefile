@@ -2,20 +2,20 @@
 #OBJS = timer.o fortranTest.o testtimer.o
 #LIBS = -lstdc++
 
-timer: timer.o fortranTest.o testtimer.o
-	gfortan timer.o fortranTest.o testtimer.o -o timer -lstdc++
+timer: timer.o fortranfunction.o testtimer.o fortranTest.o 
+	g++ -o timer timer.o fortranfunction.o testtimer.o fortranTest.o -lstdc++ 
 
 fortranTest.o: fortranTest.f90
-	gfortran fortranTest.f90 -o fortranTest.o
+	gfortran -c fortranTest.f90
 
-testtimer.0: testtimer.cpp
-	g++ testtimer.cpp -o testtimer.o
+testtimer.o: testtimer.cpp
+	g++ -c testtimer.cpp
 
-fortranfucntions.o: fortranfunctions.cpp
-	g++ fortranfunctions.cpp -o fortranfunctions.o
+fortranfucntion.o: fortranfunction.cpp
+	g++ -c fortranfunctions.cpp
 
 timer.o: timer.cpp
-	g++ timer.cpp -o timer.o
+	g++ -c timer.cpp  
 
 clean: 
 	rm -f .o .txt

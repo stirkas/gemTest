@@ -1,41 +1,45 @@
 program testcase
     use iso_c_binding
 
+    implicit none
+
     real, dimension(100) :: test1
     real, dimension(100,100) :: test2
     real, dimension(100,100,100) :: test3
 
     interface 
-        subroutine initclassptr(ptrtimer) bind(c, name = "initclassptr_")
+        subroutine initptr(ptrtimer) bind(c, name = "initptr_")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
-        end subroutine initclassptr
+        end subroutine initptr
 
         subroutine savetimesf(ptrtimer) bind(c, name = "savetimesf_")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
         end subroutine savetimesf
 
-        subroutine starttimerf(ptrtimer) bind(c, name = "starttimer_")
+        subroutine starttimerf(ptrtimer) bind(c, name = "starttimerf_")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
         end subroutine starttimerf
 
-        subroutine stoptimerf(ptrtimer) bind(c, name = "stoptimer_")
+        subroutine stoptimerf(ptrtimer) bind(c, name = "stoptimerf_")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
         end subroutine stoptimerf
 
     end interface
 
+    integer  i,j,k
+
     type(c_ptr) :: ptrtimer
-    call initclassprt(ptrtimer)
-    call StartTimer(ptrtimer)
+    call initptr(ptrtimer)
+    call starttimerf(ptrtimer)
     do i = 1, 100
         test1(i) = test1(i) + 1
     end do
-    call stopTimerf(ptrtimer)
-    call SaveTimesF(ptrtimer)
+    call stoptimerf(ptrtimer)
+    call savetimesf(ptrtimer)
     
     do i = 1, 100
         do j = 1,100
