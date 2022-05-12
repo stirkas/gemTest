@@ -18,6 +18,8 @@ extern "C"
 
 
     void stoptimerf(TimerClass *ptrtimer);
+
+    void testcase_();
  
 }
 

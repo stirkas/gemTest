@@ -1,4 +1,4 @@
-program testcase
+subroutine testcase
     use iso_c_binding
 
     implicit none
@@ -55,7 +55,7 @@ program testcase
         end do
     end do
 
-end program testcase
+end subroutine testcase
 
     
 

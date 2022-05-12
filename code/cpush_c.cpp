@@ -183,36 +183,130 @@ void cpush_c_(int& n,int& ns)
            w2[ns][m] = 0.;
            w3[ns][m] = 0.;
         }
-        if(x3(ns,m)<0..and.iperidf==0)then
-           x3(ns,m) = 1.e-8
-           z3(ns,m)=lz-z3(ns,m)
-           x2(ns,m) = x3(ns,m)
-           z2(ns,m) = z3(ns,m)
-           w2(ns,m) = 0.
-           w3(ns,m) = 0.
-        end if
-        z3(ns,m)=mod(z3(ns,m)+8.*lz,lz)
-        x3(ns,m)=mod(x3(ns,m)+800.*lx,lx)         
-        x3(ns,m) = min(x3(ns,m),lx-1.0e-8)
-        y3(ns,m) = min(y3(ns,m),ly-1.0e-8)
-        z3(ns,m) = min(z3(ns,m),lz-1.0e-8       
-        !     particle diagnostics done here because info is available...
-        k = int(x3(ns,m)/(lx/nsubd))
-        k = min(k,nsubd-1)
-        k = k+1
-        mypfl_es(k)=mypfl_es(k) + w3old*(eyp) 
-        mypfl_em(k)=mypfl_em(k) + w3old*(vpar*delbxp/b) 
-        myefl_es(k)=myefl_es(k) + vfac*w3old*(eyp)
-        myefl_em(k)=myefl_em(k) + vfac*w3old*(vpar*delbxp/b)
-        myke=myke + vfac*w3(ns,m)
-        mynos=mynos + w3(ns,m)
-        myavewi = myavewi+abs(w3(ns,m)      
-        !     xn+1 becomes xn...
-        u2(ns,m)=u3(ns,m)
-        x2(ns,m)=x3(ns,m)
-        y2(ns,m)=y3(ns,m)
-        z2(ns,m)=z3(ns,m)
-        w2(ns,m)=w3(ns,m        
-        !     100     continue
+        if(x3(ns,m)<0.&& iperidf==0)
+        {
+           x3[ns][m] = 1.e-8;
+           z3[ns][m]=lz-z3[ns][m];
+           x2[ns][m] = x3[ns][m];
+           z2[ns][m] = z3[ns][m];
+           w2[ns][m] = 0.;
+           w3[ns][m] = 0.;
+        }
+           
+        z3[ns][m]=int(z3[ns][m]+8.*lz)%int(lz);
+        x3[ns][m]=int(x3(ns,m)+800.*lx)%int(lx);        
+        x3[ns][m] = min(x3[ns][m],lx-1.0e-8);
+        y3[ns][m] = min(y3[ns][m],ly-1.0e-8);
+        z3[ns][m] = min(z3[ns][m],lz-1.0e-8);      
+        //     particle diagnostics done here because info is available...
+        k = int(x3(ns,m)/(lx/nsubd));
+        k = min(k,nsubd-1);
+        k = k+1;
+        mypfl_es[k]=mypfl_es[k] + w3old*(eyp);
+        mypfl_em[k]=mypfl_em[k] + w3old*(vpar*delbxp/b);
+        myefl_es[k]=myefl_es[k] + vfac*w3old*(eyp);
+        myefl_em[k]=myefl_em[k] + vfac*w3old*(vpar*delbxp/b);
+        myke=myke + vfac*w3[ns][m];
+        mynos=mynos + w3[ns][m];
+        myavewi = myavewi+abs(w3[ns][m]);      
+        //     xn+1 becomes xn...
+        u2[ns][m]=u3[ns][m];
+        x2[ns][m]=x3[ns][m];
+        y2[ns][m]=y3[ns][m];
+        z2[ns][m]=z3[ns][m];
+        w2[ns][m]=w3[ns][m];        
+        //     100     continue
      } 
-}
+
+   sbuf[1]=myke;
+   sbuf[2]=myefl_es[nsubd/2];
+   sbuf[3]=mypfl_es[nsubd/2];
+   sbuf[4]=mynos;
+   sbuf[5]=myavewi;
+   ierr = MPI_ALLREDUCE(sbuf,rbuf,10,MPI_REAL8,MPI_SUM,MPI_COMM_WORLD);
+   
+   ketemp =rbuf[1];
+   efltemp=rbuf[2];
+   pfltemp=rbuf[3];
+   nostemp=rbuf[4];
+   avewi[ns][n] = rbuf[5]/( float(tmm[1]) );
+   nos[1][n]=nostemp/( float(tmm[1]) );
+   ke[1][n]=ketemp/( 2.*float(tmm[1])*mims[ns] );
+   
+   ierr = MPI_BARRIER(MPI_COMM_WORLD);
+   
+   sbuf[nsubd] = myefl_es[nsubd];
+   ierr = MPI_ALLREDUCE(sbuf,rbuf,10,MPI_REAL8,MPI_SUM,MPI_COMM_WORLD);
+   for(k == 1,\; k < nsubd; k++)
+   {
+      efl_es[ns][k][n]=rbuf[k]/( float(tmm[1]) )*totvol/vol[k]*cn0s[ns];
+   }
+   
+   sbuf[nsubd] = myefl_em[nsubd];
+   ierr = MPI_ALLREDUCE(sbuf,rbuf,10,MPI_REAL8,MPI_SUM,MPI_COMM_WORLD);
+   for(k ==1; k < nsubd; k++)
+   {
+      efl_em[ns][k][n]=rbuf[k]/( float(tmm[1]) )*totvol/vol[k]*cn0s[ns];
+   }
+   
+   sbuf[nsubd] = mypfl_es[nsubd];
+   ierr = MPI_ALLREDUCE(sbuf,rbuf,10,MPI_REAL8,MPI_SUM,MPI_COMM_WORLD);
+   for(k == 1;k < nsubd; k++)
+   {
+      pfl_es[ns][k][n]=rbuf[k]/( float(tmm[1]) )*totvol/vol[k]*cn0s[ns];
+   }
+   
+   sbuf[nsubd] = mypfl_em[nsubd];
+   ierr = MPI_ALLREDUCE(sbuf,rbuf,10,MPI_REAL8,MPI_SUM,MPI_COMM_WORLD);
+   for(k == 1;k < nsubd; k++)
+   {
+      pfl_em[ns][k][n]=rbuf[k]/( float(tmm[1]) )*totvol/vol[k]*cn0s[ns];
+   }
+   
+   //      pfl(1,n)=pfltemp/( float(tmm(1)) )
+   //      efl(1,n)=mims(ns)/tets(1)*efltemp/( float(tmm(1)) )
+   
+   np_old=mm[ns]; 
+   ierr = MPI_BARRIER(MPI_COMM_WORLD);
+
+  /* call init_pmove(z3(ns,:),np_old,lz,ierr)
+  !     
+  call pmove(x2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(x3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(y2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(y3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(z2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(z3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(u2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(u3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(w2(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(w3(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(mu(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(xii(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(z0i(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(pzi(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(eki(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+  call pmove(u0i(ns,:),np_old,np_new,ierr)
+  if (ierr.ne.0) call ppexit
+
+  call end_pmove(ierr)
+  mm(ns)=np_new
+  !     write(*,*)MyId,mm(ns)
+
+  !      return*/
+}    

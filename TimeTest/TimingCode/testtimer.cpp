@@ -1,5 +1,5 @@
 #include "timer.hpp"
-
+#include "fortranfunction.h"
 #include <iostream>
 
 using namespace std;
@@ -22,6 +22,8 @@ int main()
     }
 
     timer.savetimes("testfile.txt");
+
+    testcase_();
 
     return 0;
 }
