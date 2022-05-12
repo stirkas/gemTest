@@ -5,14 +5,14 @@
 timer: timer.o fortranfunction.o testtimer.o fortranTest.o 
 	g++ -o timer timer.o fortranfunction.o testtimer.o fortranTest.o -lstdc++ 
 
-fortranTest.o: fortranTest.f90
-	gfortran -c fortranTest.f90
+fortranTest.o: fortranTest.f90 fortranfunction.o
+	gfortran -c fortranTest.f90	
 
 testtimer.o: testtimer.cpp
-	g++ -c testtimer.cpp
+	g++ -c testtimer.cpp	
 
 fortranfucntion.o: fortranfunction.cpp
-	g++ -c fortranfunctions.cpp
+	g++ -c fortranfunctions.cpp		
 
 timer.o: timer.cpp
 	g++ -c timer.cpp  

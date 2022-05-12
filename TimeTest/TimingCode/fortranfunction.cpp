@@ -13,7 +13,7 @@ void initptr(TimerClass *ptrtimer)
         ptrtimer = &timer;
     }
 
-    
+
 }
 void savetimesf(TimerClass *ptrtimer)
 {

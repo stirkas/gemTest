@@ -8,22 +8,22 @@ program testcase
     real, dimension(100,100,100) :: test3
 
     interface 
-        subroutine initptr(ptrtimer) bind(c, name = "initptr_")
+        subroutine initptr(ptrtimer) bind(c, name = "initptr")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
         end subroutine initptr
 
-        subroutine savetimesf(ptrtimer) bind(c, name = "savetimesf_")
+        subroutine savetimesf(ptrtimer) bind(c, name = "savetimesf")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
         end subroutine savetimesf
 
-        subroutine starttimerf(ptrtimer) bind(c, name = "starttimerf_")
+        subroutine starttimerf(ptrtimer) bind(c, name = "starttimerf")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
         end subroutine starttimerf
 
-        subroutine stoptimerf(ptrtimer) bind(c, name = "stoptimerf_")
+        subroutine stoptimerf(ptrtimer) bind(c, name = "stoptimerf")
             use iso_c_binding
             type(c_ptr) :: ptrtimer
         end subroutine stoptimerf
