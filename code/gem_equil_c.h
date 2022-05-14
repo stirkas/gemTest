@@ -12,6 +12,8 @@ extern int nr2, ildu, itube, nr, iperidf, ntheta;
 //1D arrays
 extern double *xn0e_ptr,*t0e_ptr,*thfnz_ptr, *f_ptr, *jfn_ptr, *psip_ptr, *phincp_ptr, *psip2_ptr, *dipdr_ptr, *tgis_ptr, *sf_ptr;
 
+extern double *psi_ptr, *cn0s_ptr;
+
 //2d arrays
 extern double *dbdr_ptr, *dbdth_ptr, *grcgt_ptr, *bfld_ptr, *radius_ptr, *dydr_ptr, *qhat_ptr, *gr_ptr, *gxdgy_ptr, *curvbz_ptr, *bdcrvb_ptr, *grdgt_ptr;
 extern double **dbdr_cptr, **dbdth_cptr, **grcgt_cptr, **bfld_cptr, **radius_cptr, **dydr_cptr, **qhat_cptr, **gr_cptr, **gxdgy_cptr, **curvbz_cptr, **bdcrvb_cptr, **grdgt_cptr;

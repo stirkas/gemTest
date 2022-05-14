@@ -131,6 +131,7 @@ module gem_com
   REAL,DIMENSION(:),allocatable :: fe,te
   REAL,target, DIMENSION(:),allocatable :: rmsphi,rmsapa,avewe
   REAL,target, DIMENSION(:,:),allocatable :: nos,avewi
+  type(c_ptr), bind(c) :: avewi_ptr
 
   !    flux diagnostics
   REAL,target, DIMENSION(:),allocatable :: vol

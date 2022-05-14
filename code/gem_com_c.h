@@ -12,12 +12,21 @@ extern int myid,imx,nmx, mmx, nsmx,jmx,jcnt,nsubd,master, gclr, tclr, kmx, xnplt
 
 extern int iflr, ipara, nonlin[5], peritr, kcnt, nxpp;
 
+extern double pi;
+
+extern int iorb;
+
+
 //1d pointers
 extern double *vol_ptr,*rmsapa_ptr,*rmsphi_ptr,*avewe_ptr,*mdhis_ptr,*mdhisa_ptr;
 
 extern double *mdhisb_ptr,*mdhisc_ptr,*mdhisd_ptr, *mm_ptr, *mims_ptr, *q_ptr;
 
 extern int *lr_ptr;
+
+extern double*q_ptr;
+
+extern int *tmm_ptr;
 
 //2d pointers
 extern double *pfle_es_ptr,*avewi_ptr,*efle_es_ptr,*yyre_ptr,*yyim_ptr;
