@@ -16,10 +16,9 @@ using namespace std;
 
 void cpush_c_(int& n,int& ns)
 {
-    int n;
     double phip,exp1,eyp,ezp,delbxp,delbyp,dpdzp,dadzp,aparp;
     double wx0,wx1,wy0,wy1,wz0,wz1,w3old;
-    int m,i,j,k,ns,l;
+    int m,i,j,k,l;
     int np_old,np_new;
     double vfac,vpar,vxdum,dum,xdot,ydot,zdot,pzdot,edot,pzd0,vp0;
     double rhog,xt,yt,zt,kap,xs,pidum,dum1,kaptp,kapnp,xnp;
@@ -45,7 +44,8 @@ void cpush_c_(int& n,int& ns)
     pfltemp=0.;
     efltemp=0.;
     nostemp=0.;
-    pidum = 1/(pi*2)^1.5*vwidth^3;
+    pidum = 1/(pow(pi*2,3/2)*pow(vwidth,3));
+   
 
     for(m == 1; m < mm_ptr[ns]; m++)
     {
@@ -109,14 +109,14 @@ void cpush_c_(int& n,int& ns)
         //  4 pt. avg. written out explicitly for vectorization...
         for(l == 1; l < lr_ptr[1]; l++)
         {
-           xs=x3_cptr[ns][m]+rhox_ptr[l]; //rwx(1,l)*rhog
-           yt=y3_cptr[ns][m]+rhoy_ptr[l]; //(rwy(1,l)+sz*rwx(1,l))*rhog
+           xs=x3_cptr[ns][m]+rhox[l]; //rwx(1,l)*rhog
+           yt=y3_cptr[ns][m]+rhoy[l]; //(rwy(1,l)+sz*rwx(1,l))*rhog
            //   BOUNDARY
            xt=int(xs+800.*lx)% int(lx);
            yt=int(yt+800.*ly)%int(ly);
            xt = min(xt,lx-1.0e-8);
            yt = min(yt,ly-1.0e-8);        
-           include "cpushngp.h";
+           //#include "cpushngp.h";
         }
                 
         exp1=exp1/4.;
@@ -127,18 +127,18 @@ void cpush_c_(int& n,int& ns)
         dpdzp = dpdzp/4.;
         dadzp = dadzp/4.;
         aparp = aparp/4     ;
-        vfac = 0.5*(mims_ptr[ns]*u3_cptr[ns][m]^2 + 2.*mu_cptr[ns][m]*b);
-        vp0 = 1./b^2*lr0/q0*qhatp*fp/radiusp*grcgtp;
+        vfac = 0.5*(pow(mims_ptr[ns]*u3_cptr[ns][m],2) + 2.*mu_cptr[ns][m]*b);
+        vp0 = 1./pow(b,2)*lr0/q0*qhatp*fp/radiusp*grcgtp;
         vp0 = vp0*vncp*vexbsw;
-        vpar = u3_cptr[ns][m]-q_ptr[ns]/mims_ptr[ns]*aparp*nonlin_ptr[ns]*0.;
+        vpar = u3_cptr[ns][m]-q_ptr[ns]/mims_ptr[ns]*aparp*nonlin[ns]*0.;
         bstar = b*(1+mims_ptr[ns]*vpar/(q_ptr[ns]*b)*bdcrvbp);
         enerb=(mu_cptr[ns][m]+mims_ptr[ns]*vpar*vpar/b)/q_ptr[ns]*b/bstar*tor;      
         kap = kapnp - (1.5-vfac/ter)*kaptp-vpar*mims_ptr[ns]/ter*vparspp*vparsw;
         dum1 = 1./b*lr0/q0*qhatp*fp/radiusp*grcgtp;
         vxdum = (eyp/b+vpar/b*delbxp)*dum1;
         xdot = vxdum*nonlin[ns] -iorb*enerb/bfldp/bfldp*fp/radiusp*dbdtp*grcgtp;
-        ydot = (-exp1/b+vpar/b*delbyp)*dum1*nonlin[ns]+iorb*enerb/bfldp/bfldp*fp/radiusp*grcgtp*(-dydrp*dbdtp+r0/q0*qhatp*dbdrp)+vp0+enerb/(bfldp^2)*psipp*lr0/q0/radiusp^2*(dbdrp*grp*2+dbdtp*grdgtp)-mims_ptr[ns]*vpar^2/(q_ptr[ns]*bstar*b)*(psip2p*grp^2/radiusp+curvbzp)*lr0/(radiusp*q0)-dipdrp/radiusp*mims_ptr[ns]*vpar^2/(q_ptr[ns]*bstar*b)*grcgtp*lr0/q0*qhatp;  
-        zdot =  vpar*b/bstar*(1.-tor+tor*q0*br0/radiusp/b*psipp*grcgtp)/jfnp+q0*br0*enerb/(b*b)*fp/radiusp*dbdrp*grcgtp/jfnp-1./b^2*q0*br0*fp/radiusp*grcgtp*vncp*vexbsw/jfnp-dipdrp/radiusp*mims_ptr[ns]*vpar^2/(q_ptr[ns]*bstar*b)*q0*br0*grcgtp/jfnp;     
+        ydot = (-exp1/b+vpar/b*delbyp)*dum1*nonlin[ns]+iorb*enerb/bfldp/bfldp*fp/radiusp*grcgtp*(-dydrp*dbdtp+r0/q0*qhatp*dbdrp)+vp0+enerb/pow(bfldp,2)*psipp*lr0/q0/pow(radiusp,2)*(dbdrp*grp*2+dbdtp*grdgtp)-mims_ptr[ns]*pow(vpar,2)/(q_ptr[ns]*bstar*b)*(pow(psip2p*grp,2)/radiusp+curvbzp)*lr0/(radiusp*q0)-dipdrp/radiusp*mims_ptr[ns]*pow(vpar,2)/(q_ptr[ns]*bstar*b)*grcgtp*lr0/q0*qhatp;  
+        zdot = vpar*b/bstar*(1.-tor+tor*q0*br0/radiusp/b*psipp*grcgtp)/jfnp+q0*br0*enerb/(b*b)*fp/radiusp*dbdrp*grcgtp/jfnp-1./pow(b,2)*q0*br0*fp/radiusp*grcgtp*vncp*vexbsw/jfnp-dipdrp/radiusp*mims_ptr[ns]*pow(vpar,2)/(q_ptr[ns]*bstar*b)*q0*br0*grcgtp/jfnp;     
         pzd0 = tor*(-mu_cptr[ns][m]/mims_ptr[ns]/radiusp/bfldp*psipp*dbdtp*grcgtp)*b/bstar+mu_cptr[ns][m]*vpar/(q_ptr[ns]*bstar*b)*dipdrp/radiusp*dbdtp*grcgtp;
         pzdot = pzd0 + (q_ptr[ns]/mims_ptr[ns]*ezp*q0*br0/radiusp/b*psipp*grcgtp/jfnp+q_ptr[ns]/mims_ptr[ns]*(-xdot*delbyp+ydot*delbxp+zdot*dadzp))*ipara;        
         edot = q_ptr[ns]*(xdot*exp1+(ydot-vp0)*eyp+zdot*ezp)+q_ptr[ns]*pzdot*aparp*tor+q_ptr[ns]*vpar*(-xdot*delbyp+ydot*delbxp+zdot*dadzp)-q_ptr[ns]*vpar*delbxp*vp0;      
@@ -146,11 +146,11 @@ void cpush_c_(int& n,int& ns)
         y3_cptr[ns][m] = y2_cptr[ns][m] + dt*ydot;
         z3_cptr[ns][m] = z2_cptr[ns][m] + dt*zdot;
         u3_cptr[ns][m] = u2_cptr[ns][m] + dt*pzdot;      
-        dum = 1-w3_cptr[ns][m]*nonlin_ptr[ns]*0.;
+        dum = 1-w3_cptr[ns][m]*nonlin[ns]*0.;
 
         if(ildu == 1)
         {
-             dum = (tgis_ptr[ns]/ter)^1.5*exp(vfac*(1/tgis_ptr[ns]-1./ter));
+             dum = pow((tgis_ptr[ns]/ter),1.5)*exp(vfac*(1/tgis_ptr[ns]-1./ter));
         }
 
         //         vxdum = eyp+vpar/b*delbxp
@@ -172,7 +172,7 @@ void cpush_c_(int& n,int& ns)
         wx0 = (rin+(i+1)*dr-r)/dr;
         wx1 = 1.-wx0;
         qr = wx0*sf_ptr[i]+wx1*sf_ptr[i+1];
-        y3_cptr[ns][m]= int(y3_cptr[ns][m]-laps*2*pi*qr*lr0/q0*sign(1.0,q0)+8000.*ly)%int(ly);
+        y3_cptr[ns][m]= int(y3_cptr[ns][m]-laps*2*pi*qr*lr0/q0*(q0/abs(q0))+8000.*ly)%int(ly);
 
         if(x3_cptr[ns][m]>lx && iperidf==0)
         {
@@ -230,8 +230,8 @@ void cpush_c_(int& n,int& ns)
    pfltemp=rbuf[3];
    nostemp=rbuf[4];
    avewi_cptr[ns][n] = rbuf[5]/( float(tmm_ptr[1]) );
-   nos[1][n]=nostemp/( float(tmm_ptr[1]) );
-   ke[1][n]=ketemp/( 2.*float(tmm_ptr[1])*mims_ptr[ns] );
+   nos_cptr[1][n]=nostemp/( float(tmm_ptr[1]) );
+   ke_cptr[1][n]=ketemp/( 2.*float(tmm_ptr[1])*mims_ptr[ns] );
    
    ierr = MPI_Barrier(MPI_COMM_WORLD);
    

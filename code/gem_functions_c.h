@@ -13,6 +13,8 @@ extern "C"
 
     void ppush_c_(int& n, int& ns);
 
+    void cpush_c_(int& n, int& ns);
+
     //pputil functions
     
     void init_pmove_(double* xp, int np, double lz, int ierr);

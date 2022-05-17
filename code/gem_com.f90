@@ -44,7 +44,7 @@ module gem_com
   integer :: mme,mmb
   REAL, dimension(:,:),allocatable :: rwx,rwy
   INTEGER,target,dimension(:),allocatable :: mm,tmm,lr
-  type(c_ptr), bind(c) :: mm_ptr, lr_ptr
+  type(c_ptr), bind(c) :: mm_ptr, lr_ptr, tmm_ptr
 
   integer :: micell,mecell !jycheng
   integer :: nonlin1,nonlin2 !jycheng
@@ -127,11 +127,11 @@ module gem_com
 
   !    energy diagnostic arrays
 
-  REAL,DIMENSION(:,:),allocatable :: ke
+  REAL, target, DIMENSION(:,:),allocatable :: ke
   REAL,DIMENSION(:),allocatable :: fe,te
   REAL,target, DIMENSION(:),allocatable :: rmsphi,rmsapa,avewe
   REAL,target, DIMENSION(:,:),allocatable :: nos,avewi
-  type(c_ptr), bind(c) :: avewi_ptr
+  type(c_ptr), bind(c) :: avewi_ptr, ke_ptr, nos_ptr
 
   !    flux diagnostics
   REAL,target, DIMENSION(:),allocatable :: vol
@@ -139,7 +139,7 @@ module gem_com
   REAL,target, DIMENSION(:,:,:),allocatable :: pfl_es,pfl_em,efl_es,efl_em
   REAL,DIMENSION(:,:),allocatable :: chii, chie, ddi
   REAL,DIMENSION(:),allocatable :: achii, achie, addi
-
+  type(c_ptr), bind(c) :: efle_es_prt, pfle_es_ptr
   !   mode diagnositics
   INTEGER :: modem
   INTEGER,dimension(:),allocatable :: lmode,mmode,nmode
@@ -189,7 +189,7 @@ module gem_com
   type(c_ptr), bind(c) :: vol_ptr,rmsapa_ptr,rmsphi_ptr,avewe_ptr,mdhis_ptr,mdhisa_ptr
   type(c_ptr), bind(c) :: mdhisb_ptr,mdhisc_ptr,mdhisd_ptr
   
-  type(c_ptr), bind(c) :: pfle_es_ptr,avewi_ptr,efle_es_ptr,yyre_ptr,yyim_ptr
+  type(c_ptr), bind(c) :: efle_es_ptr,yyre_ptr,yyim_ptr
   type(c_ptr), bind(c) :: yyamp_ptr, efle_em_ptr, pfle_em_ptr
 
   type(c_ptr), bind(c) :: phihis_ptr,aparhis_ptr
@@ -297,45 +297,48 @@ contains
          pmtrxi(0:imx-1,0:jmx-1,1:nb,1:nb))
 
      !spec 1d arrays
-     vol_ptr = c_loc(vol(1))
+     vol_ptr    = c_loc(vol(1))
      rmsapa_ptr = c_loc(rmsapa(0))
      rmsphi_ptr = c_loc(rmsphi(0))
-     avewe_ptr = c_loc(avewe(0))
-     mdhis_ptr = c_loc(mdhis(0))
+     avewe_ptr  = c_loc(avewe(0))
+     mdhis_ptr  = c_loc(mdhis(0))
      mdhisa_ptr = c_loc(mdhisa(1))
      mdhisb_ptr = c_loc(mdhisb(1))
      mdhisc_ptr = c_loc(mdhisc(1))
      mdhisd_ptr = c_loc(mdhisd(1))
-     lr_ptr = c_loc(lr(1))
-     mm_ptr = c_loc(mm(1))
+     lr_ptr     = c_loc(lr(1))
+     mm_ptr     = c_loc(mm(1))
+     tmm_ptr    = c_loc(tmm(1))
 
      !spec 2d arrays
      pfle_es_ptr = c_loc(pfle_es(1,0))
-     avewi_ptr = c_loc(avewi(1,0))
+     avewi_ptr   = c_loc(avewi(1,0))
      efle_es_ptr = c_loc(efle_es(1,0))
-     yyre_ptr = c_loc(yyre(1,0))
-     yyim_ptr = c_loc(yyim(1,0))
-     yyamp_ptr = c_loc(yyamp(1,0))
-     phihis_ptr = c_loc(phihis(0,0))
+     yyre_ptr    = c_loc(yyre(1,0))
+     yyim_ptr    = c_loc(yyim(1,0))
+     yyamp_ptr   = c_loc(yyamp(1,0))
+     phihis_ptr  = c_loc(phihis(0,0))
      aparhis_ptr = c_loc(aparhis(0,0))
      efle_em_ptr = c_loc(efle_em(1,0))
      pfle_em_ptr = c_loc(pfle_em(1,0))
 
-     x2_ptr = c_loc(x2(1,1))
-     z2_ptr = c_loc(z2(1,1))
-     u2_ptr = c_loc(u2(1,1))
-     mu_ptr = c_loc(mu(1,1))
-     y2_ptr = c_loc(y2(1,1))
-     w3_ptr = c_loc(w3(1,1))
-     w2_ptr = c_loc(w2(1,1))
+     x2_ptr  = c_loc(x2(1,1))
+     z2_ptr  = c_loc(z2(1,1))
+     u2_ptr  = c_loc(u2(1,1))
+     mu_ptr  = c_loc(mu(1,1))
+     y2_ptr  = c_loc(y2(1,1))
+     w3_ptr  = c_loc(w3(1,1))
+     w2_ptr  = c_loc(w2(1,1))
      pzi_ptr = c_loc(pzi(1,1))
      xii_ptr = c_loc(xii(1,1))
      uoi_ptr = c_loc(u0i(1,1))
-     u3_ptr = c_loc(u3(1,1))
-     x3_ptr = c_loc(x3(1,1))
-     y3_ptr = c_loc(y3(1,1))
-     z3_ptr = c_loc(z3(1,1))
+     u3_ptr  = c_loc(u3(1,1))
+     x3_ptr  = c_loc(x3(1,1))
+     y3_ptr  = c_loc(y3(1,1))
+     z3_ptr  = c_loc(z3(1,1))
      eki_ptr = c_loc(eki(1,1))
+     nos_ptr = c_loc(nos(1,0))
+     ke_ptr  = c_loc(ke(1,0))
 
 
 
@@ -352,9 +355,9 @@ contains
 
      delbx_ptr = c_loc(delbx(0,0,0))
      delby_ptr = c_loc(delby(0,0,0))
-     dpdz_ptr = c_loc(dpdz(0,0,0))
-     dadz_ptr = c_loc(dadz(0,0,0))
-     apar_ptr = c_loc(ex(0,0,0))
+     dpdz_ptr  = c_loc(dpdz(0,0,0))
+     dadz_ptr  = c_loc(dadz(0,0,0))
+     apar_ptr  = c_loc(ex(0,0,0))
 
 
 

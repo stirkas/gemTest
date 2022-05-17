@@ -30,6 +30,8 @@ double** x3_cptr      = nullptr;
 double** y3_cptr      = nullptr;
 double** z3_cptr      = nullptr;
 double** eki_cptr     = nullptr;
+double** nos_cptr     = nullptr;
+double** ke_cptr      = nullptr;
 
 
 complex<double>** phihis_cptr  = nullptr;
@@ -87,6 +89,9 @@ void Allocate2dPointerArrays_gem_com()
    Allocate2dPointerArray<double>(y3_ptr, y3_cptr,nsmx, mmx);
    Allocate2dPointerArray<double>(z3_ptr, z3_cptr,nsmx, mmx);
    Allocate2dPointerArray<double>(eki_ptr, eki_cptr,nsmx, mmx);
+
+   Allocate2dPointerArray<double>(nos_ptr, nos_cptr,nsmx, nmx);
+   Allocate2dPointerArray<double>(ke_ptr, ke_cptr,nsmx, nmx+1);
 
 }
 

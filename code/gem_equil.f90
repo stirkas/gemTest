@@ -32,7 +32,7 @@ MODULE gem_equil
                                       dldr,dldt,drhdr,drhdt,dbdl,dbdrho, &
                                       db2dl,db2drho,dbpsdl,dipdr, &
                                       rdtemp
-  type(c_ptr), bind(C) :: xn0e_ptr, t0e_ptr, thfnz_ptr,dbdr_ptr, dbdth_ptr, grcgt_ptr, bfld_ptr, radius_ptr, dydr_ptr, qhat_ptr, gr_ptr, gxdgy_ptr, grdgt_ptr, f_ptr, jfn_ptr, psip_ptr, phincp_ptr, dipdr_ptr, sf_ptr
+  type(c_ptr), bind(C) :: xn0e_ptr, psi_ptr, t0e_ptr, thfnz_ptr,dbdr_ptr, dbdth_ptr, grcgt_ptr, bfld_ptr, radius_ptr, dydr_ptr, qhat_ptr, gr_ptr, gxdgy_ptr, grdgt_ptr, f_ptr, jfn_ptr, psip_ptr, phincp_ptr, dipdr_ptr, sf_ptr
 
 !for Miller local flux-tube
   real :: candyf0p
@@ -47,7 +47,7 @@ MODULE gem_equil
   type(c_ptr), bind(C) :: t0s_ptr, capts_ptr, capns_ptr, xn0s_ptr, vparsp_ptr
   real,target,dimension(:),allocatable :: cn0s,n0smax,tgis
   real :: tge
-  type(c_ptr), bind(c) :: tgis_ptr
+  type(c_ptr), bind(c) :: tgis_ptr, cn0s_ptr
   character(len=32) :: trflnm ! profile-data-file name
 !  real,external :: erf
 
@@ -716,6 +716,8 @@ contains
       dipdr_ptr = c_loc(dipdr(0))
       tgis_ptr = c_loc(tgis(1))
       sf_ptr = c_loc(sf(0))
+      psi_ptr = c_loc(psi(0))
+      cn0s_ptr = c_loc(cn0s(0))
 
       dbdr_ptr = c_loc(dbdr(0,0))
       dbdth_ptr = c_loc(dbdth(0,0))

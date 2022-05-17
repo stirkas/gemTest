@@ -35,6 +35,11 @@ program gem_main
       integer(c_int) :: n, ns
     end subroutine
 
+    subroutine cpush_c(n,ns) bind(c, name = 'cpush_c_')
+      use iso_c_binding
+      integer(c_int) :: n, ns
+    end subroutine
+
     !TODO: Move into the right modules.
     subroutine new_gem_com_c() bind(c, name = 'new_gem_com_c_')
        use iso_c_binding

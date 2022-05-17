@@ -45,9 +45,9 @@ extern double *x2_ptr, *z2_ptr, *u2_ptr, *mu_ptr, *y2_ptr, *w3_ptr, *w2_ptr, *pz
 
 extern double **x2_cptr, **z2_cptr, **u2_cptr, **mu_cptr, **y2_cptr, **w3_cptr, **w2_cptr, **pzi_cptr, **xii_cptr, **z0i_cptr;
 
-extern double *uoi_ptr, *u3_ptr;
+extern double *uoi_ptr, *u3_ptr, *nos_ptr, *ke_ptr;
 
-extern double **uoi_cptr, **u3_cptr;
+extern double **uoi_cptr, **u3_cptr, **nos_cptr, **ke_cptr;
 
 extern std::complex<double> *phihis_ptr,*aparhis_ptr;
 
