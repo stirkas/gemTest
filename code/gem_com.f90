@@ -49,7 +49,7 @@ module gem_com
   integer :: micell,mecell !jycheng
   integer :: nonlin1,nonlin2 !jycheng
   real :: mims3,q3 !jycheng
-  REAL,dimension(:),allocatable :: tets,mims,q
+  REAL, target, dimension(:),allocatable :: tets,mims,q
   REAL,dimension(:),allocatable :: kapn, kapt
   type(c_ptr), bind(c) :: mims_ptr, q_ptr
 
@@ -309,6 +309,7 @@ contains
      lr_ptr     = c_loc(lr(1))
      mm_ptr     = c_loc(mm(1))
      tmm_ptr    = c_loc(tmm(1))
+     mims_ptr   = c_loc(mims(1))
 
      !spec 2d arrays
      pfle_es_ptr = c_loc(pfle_es(1,0))

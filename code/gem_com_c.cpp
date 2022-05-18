@@ -91,7 +91,7 @@ void Allocate2dPointerArrays_gem_com()
    Allocate2dPointerArray<double>(eki_ptr, eki_cptr,nsmx, mmx);
 
    Allocate2dPointerArray<double>(nos_ptr, nos_cptr,nsmx, nmx);
-   Allocate2dPointerArray<double>(ke_ptr, ke_cptr,nsmx, nmx+1);
+   Allocate2dPointerArray<double>(ke_ptr, ke_cptr,nsmx, nmx);
 
 }
 

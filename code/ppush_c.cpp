@@ -33,7 +33,7 @@ void ppush_c_(int& n,int& ns)
 
     for(m =1; m < mm_ptr[ns]; m++)
     {
-        r = x2_cptr[m][ns]-0.5*lx*lr0;
+        r = x2_cptr[m][ns]-0.5*lx+lr0;
         k = int(z2_cptr[m][ns]/delz);
         wz0 = ((k+1)*delz-z2_cptr[m][ns])/delz;
         wz1 = 1-wz0;

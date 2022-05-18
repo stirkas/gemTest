@@ -717,7 +717,7 @@ contains
       tgis_ptr = c_loc(tgis(1))
       sf_ptr = c_loc(sf(0))
       psi_ptr = c_loc(psi(0))
-      cn0s_ptr = c_loc(cn0s(0))
+      cn0s_ptr = c_loc(cn0s(1))
 
       dbdr_ptr = c_loc(dbdr(0,0))
       dbdth_ptr = c_loc(dbdth(0,0))
