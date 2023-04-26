@@ -175,6 +175,14 @@ module gem_com
   !real :: ran2,revers
   !integer :: mod
   !real :: amod
+
+  !Subgrid ETG variables.
+  integer :: smflag,smcbc,nvgene,nwgene              !Subgrid ETG flags and input dimensions. nv and nw for v// and mu grid dims.
+  character(len=20) :: genein                        !Input file w/ Gamma(vpar,mu) data from GENE.
+  real,dimension(:,:),allocatable :: smdiff          !Subgrid model diffusion coefficient for simple model.
+  real,dimension(:,:,:),allocatable :: smdivgam      !Subgrid model divergence of gamma term.
+  real,dimension(:),allocatable :: smgradn0,smgradt0 !Subgrid model profile derivative terms.
+
   save
 
 contains
@@ -282,6 +290,11 @@ contains
     ALLOCATE(pol(1:nb,0:imx-1,0:jmx-1,0:kmx),pfac(0:imx-1,0:jmx-1), &
          pmtrx(0:imx-1,0:jmx-1,1:nb,1:nb), &
          pmtrxi(0:imx-1,0:jmx-1,1:nb,1:nb))
+
+    !Subgrid ETG model allocations.
+    allocate(smdiff(nwgene,nvgene)) !GENE file has columns for mu and rows for vpar.
+    allocate(smgradn0(0:nxpp))
+    allocate(smgradt0(0:nxpp))
 
   end subroutine new_gem_com
 

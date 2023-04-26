@@ -114,6 +114,7 @@ subroutine init
   real :: grp,gxdgyp,jacp,jfnp,gn0ep,gt0ep,gt0ip,grdgtp,gthp
   real,DIMENSION (1:5) :: gn0sp
   real :: wx0,wx1,wz0,wz1,b
+  real :: nmax,tmax,prwid,smdbg !Subgrid ETG variables.
 
   !jycheng
   namelist /primary_parameters/ itube,mimp,mcmp,chgi,chgc,imx,jmx,kmx,mmx,mmxe,nmx,nsmx,ntube,lxa, &
@@ -129,6 +130,7 @@ subroutine init
   namelist /fluxtube/ Rovera,elon0,selon0,tria0,stria0,rmaj0p,q0,shat0,teti,tcti,rhoia,Rovlni,Rovlti, &
                        Rovlne,Rovlte,Rovlnc,Rovltc,ncne,nuacs
   namelist /others/ nrst,eprs,tor,ishift,width
+  namelist /subgrid/ smflag,smcbc,genein,nvgene,nwgene
 
   IU=cmplx(0.,1.)
   pi=4.0*atan(1.0)
@@ -435,6 +437,27 @@ subroutine init
         ggx(i1,k1) = grp
      end do
   end do
+
+  !Subgrid ETG init.
+  if(smflag==1)then
+   open(117,file=genein,status='old',action='read')
+   do i = 1,6 !Skip the comment lines in GENE ASCII flux vsp output.
+      read(117,*)
+   end do
+   read(117,*) smdiff
+   close(117)
+
+   if(smcbc==1)then
+      nmax = 2.23 !Constants taken from Gorler 2016 paper for CBC profiles.
+      tmax = 6.96
+      prwid = 0.3
+      do i=0,nxpp
+         r = xg(i)-0.5*lx+lr0
+         smgradn0(i) = (a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
+         smgradt0(i) = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
+      end do
+   end if
+  end if
 
   iseed = -(1777+myid*13)
   idum = ran2(iseed)
