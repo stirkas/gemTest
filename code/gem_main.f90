@@ -438,6 +438,11 @@ subroutine init
      end do
   end do
 
+  smdbg = 1
+  do while (smdbg == 1)
+   call sleep(1)
+  end do
+
   !Subgrid ETG init.
   if(smflag==1)then
    open(117,file=genein,status='old',action='read')

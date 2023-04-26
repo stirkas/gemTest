@@ -299,13 +299,3 @@ contains
   end subroutine new_gem_com
 
 end module gem_com
-
-
-
-
-
-
-
-
-
-
