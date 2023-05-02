@@ -6,7 +6,7 @@ chgi=1        !charge of ions with respect to to electron charge
 chgc=1        !charge of impurity ions with respect to electron charge
 imx=8         !number of grid points along x direction
 jmx=8         !number of grid points along y direction - can be changed to lower time
-kmx=2         !number of grid points along z direction
+kmx=1         !number of grid points along z direction
 mmx=40000     !maximum number of marker particles 
 mmxe=80000    !
 nmx=5000      !maximum number of time steps
@@ -34,7 +34,7 @@ r0a=0.5       !r0/a; center of the radial domain
 vpp=0.000     !
 vt0=0.
 yd0=0.00
-ifluid=0      !0: no kinetic electron; 1: invokes kinetic electron
+ifluid=1      !0: no kinetic electron; 1: invokes kinetic electron
 isg=1.0       !split weigh factor, almost always 0.1
 amie=1835.46666  !proton to electron mass ratio
 rneui=0e-6    !ion electron(?) collision frequency
@@ -155,4 +155,13 @@ eprs=0.0      !the parameter for coarse graining
 tor=1.        !always set 1 in gem.in.
 ishift=0      !
 width=1.e7    !
+/
+&subgrid
+smflag=1         !Subgrid ETG model flag. 0 is off, 1 is on.
+smcbc=1          !Run CBC case. Radial profiles calculated analytically. Else need to setup correctly in GEM.
+genein='gene.in' !gene input file with Gamma(z,vpar,mu) from flux-tube GENE.
+nvgene=32        !vpar grid resolution in gene - nv0 var.
+nwgene=8         !mu grid resolution in gene - nw0 var.
+lvgene=3         !1/2 vpar box size in gene - lv var.
+lwgene=9         !mu box size in gene - lw var.
 /

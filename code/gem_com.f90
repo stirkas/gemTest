@@ -177,11 +177,14 @@ module gem_com
   !real :: amod
 
   !Subgrid ETG variables.
-  integer :: smflag,smcbc,nvgene,nwgene              !Subgrid ETG flags and input dimensions. nv and nw for v// and mu grid dims.
-  character(len=20) :: genein                        !Input file w/ Gamma(vpar,mu) data from GENE.
-  real,dimension(:,:),allocatable :: smdiff          !Subgrid model diffusion coefficient for simple model.
-  real,dimension(:,:,:),allocatable :: smdivgam      !Subgrid model divergence of gamma term.
-  real,dimension(:),allocatable :: smgradn0,smgradt0 !Subgrid model profile derivative terms.
+  integer :: smflag,smcbc,nvgene,nwgene,lvgene,lwgene !Subgrid ETG flags and input dimensions. nv and nw for v// and mu grid dims. lv and lw for v-space box sizes.
+  character(len=20) :: genein                         !Input file w/ Gamma(vpar,mu) data from GENE.
+  real,dimension(:,:),allocatable :: smdiff           !Subgrid model diffusion coefficient for simple model.
+  real,dimension(:,:,:),allocatable :: smdivgam       !Subgrid model divergence of gamma term.
+  real,dimension(:),allocatable :: smgradn0,smgradt0  !Subgrid model profile derivative terms.
+  real,dimension(:),allocatable :: smvgrd,smmugrd     !Subgrid model GENE v-space grids.
+  real :: smvpargn,smmugn                             !GENE units for vpar and mu.
+  integer :: smdbg=1
 
   save
 
@@ -293,6 +296,8 @@ contains
 
     !Subgrid ETG model allocations.
     allocate(smdiff(nwgene,nvgene)) !GENE file has columns for mu and rows for vpar.
+    allocate(smvgrd(nvgene))
+    allocate(smmugrd(nwgene))
     allocate(smgradn0(0:nxpp))
     allocate(smgradt0(0:nxpp))
 

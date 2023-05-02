@@ -114,7 +114,8 @@ subroutine init
   real :: grp,gxdgyp,jacp,jfnp,gn0ep,gt0ep,gt0ip,grdgtp,gthp
   real,DIMENSION (1:5) :: gn0sp
   real :: wx0,wx1,wz0,wz1,b
-  real :: nmax,tmax,prwid,smdbg !Subgrid ETG variables.
+  real :: nmax,tmax,prwid !Subgrid ETG variables.
+  integer :: v,w          !Subgrid ETG variables.
 
   !jycheng
   namelist /primary_parameters/ itube,mimp,mcmp,chgi,chgc,imx,jmx,kmx,mmx,mmxe,nmx,nsmx,ntube,lxa, &
@@ -130,7 +131,7 @@ subroutine init
   namelist /fluxtube/ Rovera,elon0,selon0,tria0,stria0,rmaj0p,q0,shat0,teti,tcti,rhoia,Rovlni,Rovlti, &
                        Rovlne,Rovlte,Rovlnc,Rovltc,ncne,nuacs
   namelist /others/ nrst,eprs,tor,ishift,width
-  namelist /subgrid/ smflag,smcbc,genein,nvgene,nwgene
+  namelist /subgrid/ smflag,smcbc,genein,nvgene,nwgene,lvgene,lwgene
 
   IU=cmplx(0.,1.)
   pi=4.0*atan(1.0)
@@ -148,6 +149,7 @@ subroutine init
   read(115,nml=diagnosis_parameters)
   read(115,nml=fluxtube)
   read(115,nml=others)
+  read(115,nml=subgrid)
   close(115)
   nonlin(1)=nonlin1
   nonlin(2)=nonlin2
@@ -438,11 +440,6 @@ subroutine init
      end do
   end do
 
-  smdbg = 1
-  do while (smdbg == 1)
-   call sleep(1)
-  end do
-
   !Subgrid ETG init.
   if(smflag==1)then
    open(117,file=genein,status='old',action='read')
@@ -462,6 +459,15 @@ subroutine init
          smgradt0(i) = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
       end do
    end if
+
+   smvpargn = sqrt(2.0/0.27244e-03) !GENE units of sqrt(2*(te/tref)/(me/mref)) Taken manually for now...
+   smmugn   = 1.0/2.0               !GENE units of Te0/Tref*(1/Bref) Taken manually for now...
+   do v = 1,nvgene
+      smvgrd(v) = -lvgene*smvpargn + smvpargn*((v-1)/(nvgene-1))*2*lvgene
+   end do
+   do w = 1,nwgene
+      smmugrd(w) = 0 + smmugn*((w-1)/(nwgene-1))*lwgene
+   end do
   end if
 
   iseed = -(1777+myid*13)
@@ -3331,6 +3337,10 @@ subroutine pint
      dum = 1-w2e(m)*nonline*0.
      if(eldu.eq.1)dum = (tge/ter)**1.5*exp(vfac*(1/tge-1./ter))
      vxdum = (eyp/b+vpdum/b*delbxp)*dum2
+
+     !subgrid ETG
+     call smhf(u3e(m))
+
      w3e(m)=w2e(m) + 0.5*dte*(  &
           (vxdum*kap + edot/ter-dum1*ppar*aparp/ter)*xnp     &
           +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum
@@ -5485,6 +5495,45 @@ subroutine setw(ip,n)
   end do
   !      return
 end subroutine setw
+
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+subroutine smhf(smvpar,smmu)
+   !         Interpolate to ETG heat flux for subgrid model.
+   !         Expects values already in GENE's units.
+   !         Then multiply by prof 2nd deriv to get rad dep.
+   use gem_com
+   use gem_equil
+   implicit none
+   integer :: idv,idw,flg
+   real :: smvpar,smmu,smhfetg,dvparg,dmug,w11,w12,w21,w22,denom
+
+   !         If value in range then interpolate to GENE output.
+   !         Else just set to 0.
+   if (((smvpar.gt.smvgrd(1)).and.(smvpar.lt.smvgrd(nvgene))).and. &
+       ((smmu.gt.smmugrd(1)).and.(smmu.lt.smmugrd(nwgene)))) then
+      dvparg  = smvgrd(2)-smvgrd(1)
+      dmug    = smmugrd(2)-smmugrd(1)
+      idv     = floor((smvpar-smvgrd(1))/dvparg) + 1
+      idw     = floor((smmu-smmugrd(1))/dmug) + 1
+
+      !w1      = (smvpar-smvgrd(idv))/(smvgrd(idv+1)-smvgrd(idv))
+      !w0      = (smvgrd(idv+1)-smvpar)/(smvgrd(idv+1)-smvgrd(idv))
+      !smhfetg = smdiff(idw,idv)*w0 + smdiff(idw,idv+1)*w1
+
+      denom = ((smmugrd(idv+1)-smmugrd(idv))*(smvgrd(idv+1)-smvgrd(idv)))
+      w11 = (smmugrd(idw+1)-smmu)*(smvgrd(idv+1)-smvpar)/denom
+      w12 = (smmugrd(idw+1)-smmu)*(smvpar-smvgrd(idv))/denom
+      w21 = (smmu-smmugrd(idw))*(smvgrd(idv+1)-smvpar)/denom
+      w22 = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
+      smhfetg = w11*smdiff(idw,idv) + w12*smdiff(idw,idv+1) + w21*smdiff(idw+1,idv) + w22*smdiff(idw+1,idv+1)
+
+      write (*,*) smvpar,idv,smvgrd(1),smvgrd(nvgene),smhfetg
+   else 
+      smhfetg = 0
+   end if
+
+end subroutine smhf
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
