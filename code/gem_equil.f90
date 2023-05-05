@@ -30,7 +30,9 @@ MODULE gem_equil
                                       grdgl,grdgrho,gtdgl,gtdgrho, &
                                       dldr,dldt,drhdr,drhdt,dbdl,dbdrho, &
                                       db2dl,db2drho,dbpsdl,dipdr, &
-                                      rdtemp
+                                      rdtemp, &
+                                      smf0e,smgf0e,smg2f0e, & !f0e and gradients for subgrid model. (w/o v-space dep.)
+                                      smgradn0,smgradt0,smgrad2n0,smgrad2t0 !Subgrid model profile 1st + 2nd derivative terms.
 !for Miller local flux-tube
   real :: candyf0p
   real,dimension(:),allocatable :: candyd0,candyd1,candyd2,candynus,candynu1,candydr
@@ -74,8 +76,9 @@ contains
                capti(0:nr),capte(0:nr),captb(0:nr),captc(0:nr),capni(0:nr),&
                capne(0:nr),capnb(0:nr),capnc(0:nr),zeff(0:nr),nue0(0:nr),&
                vpari(0:nr),vparc(0:nr),vparb(0:nr),phinc(0:nr), &
-               vparip(0:nr),vparcp(0:nr),vparbp(0:nr),phincp(0:nr),er(0:nr), &
-               upari(0:nr),dipdr(0:nr),rdtemp(0:nr))
+               vparip(0:nr),vparcp(0:nr),vparbp(0:nr),phincp(0:nr),er(0:nr),&
+               upari(0:nr),dipdr(0:nr),rdtemp(0:nr),smf0e(0:nr),smgf0e(0:nr),smg2f0e(0:nr),&
+               smgradn0(0:nr),smgradt0(0:nr),smgrad2n0(0:nr),smgrad2t0(0:nr))
 
       allocate(curvbz(0:nr,0:ntheta),srbr(0:nr,0:ntheta),srbz(0:nr,0:ntheta),&
                thbr(0:nr,0:ntheta),thbz(0:nr,0:ntheta), psip2(0:nr),bdcrvb(0:nr,0:ntheta),&

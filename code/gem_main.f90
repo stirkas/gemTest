@@ -440,33 +440,45 @@ subroutine init
      end do
   end do
 
-  !Subgrid ETG init.
+  !     Subgrid ETG init.
   if(smflag==1)then
+   !     Read gene output from file.
    open(117,file=genein,status='old',action='read')
    do i = 1,6 !Skip the comment lines in GENE ASCII flux vsp output.
       read(117,*)
    end do
-   read(117,*) smdiff
+   read(117,*) smgam
    close(117)
 
-   if(smcbc==1)then
-      nmax = 2.23 !Constants taken from Gorler 2016 paper for CBC profiles.
+   smdbg = 0
+   do while (smdbg == 1)
+      call sleep(1)
+   end do
+
+   !     Load cbc profiles if necessary.
+   !     Constants taken from Gorler 2016 paper for CBC profiles.
+   if(smcbc==1) then
+      nmax = 2.23
       tmax = 6.96
-      prwid = 0.3
-      do i=0,nxpp
-         r = xg(i)-0.5*lx+lr0
-         smgradn0(i) = (a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
-         smgradt0(i) = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
+      prwid = 0.3 !profile width.
+      do i=0,nr
+         r = (rin+i*dr)
+         smf0e(i)     = xn0e(i)*(emass/(2*pi*t0e(i)))**(1.5)
+         smgradn0(i)  = (a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
+         smgradt0(i)  = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
+         smgrad2n0(i) = (a/rmaj0)**2*(-2*(rmaj0/a)*(nmax/prwid)*TANH((r-r0)/(prwid*a))*(1/COSH((r-r0)/(prwid*a)))**2)
+         smgrad2t0(i) = (a/rmaj0)**2*(-2*(rmaj0/a)*(tmax/prwid)*TANH((r-r0)/(prwid*a))*(1/COSH((r-r0)/(prwid*a)))**2)
       end do
    end if
 
+   !     Generate and normalize v-space grid from GENE.
    smvpargn = sqrt(2.0/0.27244e-03) !GENE units of sqrt(2*(te/tref)/(me/mref)) Taken manually for now...
    smmugn   = 1.0/2.0               !GENE units of Te0/Tref*(1/Bref) Taken manually for now...
    do v = 1,nvgene
-      smvgrd(v) = -lvgene*smvpargn + smvpargn*((v-1)/(nvgene-1))*2*lvgene
+      smvgrd(v) = -lvgene*smvpargn + smvpargn*((v-1.0)/(nvgene-1.0))*2.0*lvgene
    end do
    do w = 1,nwgene
-      smmugrd(w) = 0 + smmugn*((w-1)/(nwgene-1))*lwgene
+      smmugrd(w) = 0 + smmugn*((w-1.0)/(nwgene-1.0))*lwgene
    end do
   end if
 
@@ -3214,6 +3226,7 @@ subroutine pint
   real :: myavptch,myaven
   integer :: myopz,myoen
   real :: x000,x001,x010,x011,x100,x101,x110,x111
+  real :: smflx=0.0 !Subgrid model flux val.
 
   myopz = 0
   myoen = 0
@@ -3339,11 +3352,13 @@ subroutine pint
      vxdum = (eyp/b+vpdum/b*delbxp)*dum2
 
      !subgrid ETG
-     call smhf(u3e(m))
+     if (smflag.eq.1) then
+      call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
+     end if
 
      w3e(m)=w2e(m) + 0.5*dte*(  &
           (vxdum*kap + edot/ter-dum1*ppar*aparp/ter)*xnp     &
-          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum
+          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp + smflx)*dum
 
      !         if(x3e(m)>lx .or. x3e(m)<0.)w3e(m) = 0. 
 
@@ -3507,6 +3522,7 @@ subroutine cint(n)
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
   real :: grp,gxdgyp,psp,pzp,psip2p,bdcrvbp,curvbzp,dipdrp,bstar
   real :: x000,x001,x010,x011,x100,x101,x110,x111
+  real :: smflx=0.0 !Subgrid model flux val.
 
   sbuf(1:10) = 0.
   rbuf(1:10) = 0.
@@ -3640,6 +3656,11 @@ subroutine cint(n)
      !         dum1 = 0.5*rneu/eps**1.5*(1+h_coll)
      dum1 = nue/(2*(eps+0.1))**1.5  !*(1+h_coll)
      !         if(x<0.3)dum1=0.0
+
+     !subgrid ETG
+     if (smflag.eq.1) then
+      call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
+     end if
 
      dum = 1-w3e(m)*nonline*0.
      if(eldu.eq.1)dum = (tge/ter)**1.5*exp(vfac*(1/tge-1./ter))
@@ -5498,42 +5519,69 @@ end subroutine setw
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-subroutine smhf(smvpar,smmu)
-   !         Interpolate to ETG heat flux for subgrid model.
-   !         Expects values already in GENE's units.
+subroutine smfl(smvpar,smmu,idrp,wx0,wx1,b,smflx)
+   !         Interpolate to ETG flux for subgrid model.
+   !         Expects unnormalized values.
    !         Then multiply by prof 2nd deriv to get rad dep.
    use gem_com
    use gem_equil
    implicit none
-   integer :: idv,idw,flg
-   real :: smvpar,smmu,smhfetg,dvparg,dmug,w11,w12,w21,w22,denom
+   integer :: v,w,idv,idw,idr
+   integer, intent(in) :: idrp
+   real :: smnr,smtr,dvparg,dmug,w11,w12,w21,w22,denom,smgamp, &
+           eps,gf0fac,g2f0fac,smg2f0ep,smdiff
+   real,dimension(:),allocatable :: smf0
+   real, intent(in) :: smvpar,smmu,wx0,wx1,b
+   real, intent(inout) :: smflx
+
+   !         Set smflx to 0 just in case, so we can kick out early.
+   smflx = 0.0
+   !         Get temp and dens at particle loc.
+   smtr = wx0*t0e(idrp) + wx1*t0e(idrp+1)
+   smnr = wx0*xn0e(idrp) + wx1*xn0e(idrp+1)
+
+   !         Need to convert flux data to GEM units.
+   do w = 1,nwgene
+      do v = 1,nvgene
+         smgamgm(w,v) = smgam(w,v)*(0.27244e-03*(smtr/smnr)*(amie))
+      end do
+   end do
 
    !         If value in range then interpolate to GENE output.
-   !         Else just set to 0.
-   if (((smvpar.gt.smvgrd(1)).and.(smvpar.lt.smvgrd(nvgene))).and. &
-       ((smmu.gt.smmugrd(1)).and.(smmu.lt.smmugrd(nwgene)))) then
+   !         Else just set to 0 and return immediately.
+   if (((smvpar.gt.smvgrd(1)).and.(smvpar.lt.smvgrd(nvgene))).and.((smmu.gt.smmugrd(1)).and.(smmu.lt.smmugrd(nwgene)))) then
       dvparg  = smvgrd(2)-smvgrd(1)
       dmug    = smmugrd(2)-smmugrd(1)
       idv     = floor((smvpar-smvgrd(1))/dvparg) + 1
       idw     = floor((smmu-smmugrd(1))/dmug) + 1
 
-      !w1      = (smvpar-smvgrd(idv))/(smvgrd(idv+1)-smvgrd(idv))
-      !w0      = (smvgrd(idv+1)-smvpar)/(smvgrd(idv+1)-smvgrd(idv))
-      !smhfetg = smdiff(idw,idv)*w0 + smdiff(idw,idv+1)*w1
+      !         Calculate weights for bilinear interpolation.
+      denom   = ((smmugrd(idw+1)-smmugrd(idw))*(smvgrd(idv+1)-smvgrd(idv)))
+      w11     = (smmugrd(idw+1)-smmu)*(smvgrd(idv+1)-smvpar)/denom
+      w12     = (smmugrd(idw+1)-smmu)*(smvpar-smvgrd(idv))/denom
+      w21     = (smmu-smmugrd(idw))*(smvgrd(idv+1)-smvpar)/denom
+      w22     = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
 
-      denom = ((smmugrd(idv+1)-smmugrd(idv))*(smvgrd(idv+1)-smvgrd(idv)))
-      w11 = (smmugrd(idw+1)-smmu)*(smvgrd(idv+1)-smvpar)/denom
-      w12 = (smmugrd(idw+1)-smmu)*(smvpar-smvgrd(idv))/denom
-      w21 = (smmu-smmugrd(idw))*(smvgrd(idv+1)-smvpar)/denom
-      w22 = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
-      smhfetg = w11*smdiff(idw,idv) + w12*smdiff(idw,idv+1) + w21*smdiff(idw+1,idv) + w22*smdiff(idw+1,idv+1)
-
-      write (*,*) smvpar,idv,smvgrd(1),smvgrd(nvgene),smhfetg
+      smgamp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
    else 
-      smhfetg = 0
+      return
    end if
 
-end subroutine smhf
+   !          Calculate gradients of f0e and add v-space dependence.
+   eps = (b*smmu+0.5*emass*smvpar*smvpar)/smtr
+   do idr = 0,nr
+      gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
+      g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
+      smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
+      smg2f0e(idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
+   end do
+
+   !          Get flux divergence at particle radial position.
+   smdiff   = smgamp/smgf0e(nr/2)
+   smg2f0ep = wx0*smg2f0e(idrp) + wx1*smg2f0e(idrp+1)
+   smflx    = smdiff*smg2f0ep
+
+end subroutine smfl
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
