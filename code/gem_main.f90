@@ -477,9 +477,9 @@ subroutine init
    do v = 1,nvgene
       smvgrd(v) = -lvgene*smvpargn + smvpargn*((v-1.0)/(nvgene-1.0))*2.0*lvgene
    end do
-   do w = 1,nwgene
-      smmugrd(w) = 0 + smmugn*((w-1.0)/(nwgene-1.0))*lwgene
-   end do
+   !mu grid not equidistant by default. Use gaulag subroutine in GENE to compute knots(positions) and weights for integration.
+   smmugrd = (/0.05528629,0.29341334,0.73088143,1.38530959,2.28766024,3.49306838,5.11067388,7.42318758/)*smmugn
+
   end if
 
   iseed = -(1777+myid*13)
@@ -3329,6 +3329,11 @@ subroutine pint
           +qel*vpdum*(-xdot*delbyp+ydot*delbxp+zdot*dadzp)   &
           -qel*vpar*delbxp*vp0
 
+     !subgrid ETG
+     if (smflag.eq.1) then
+      call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
+     end if
+
      x3e(m) = x2e(m) + 0.5*dte*xdot
      y3e(m) = y2e(m) + 0.5*dte*ydot
      z3e(m) = z2e(m) + 0.5*dte*zdot
@@ -3350,11 +3355,6 @@ subroutine pint
      dum = 1-w2e(m)*nonline*0.
      if(eldu.eq.1)dum = (tge/ter)**1.5*exp(vfac*(1/tge-1./ter))
      vxdum = (eyp/b+vpdum/b*delbxp)*dum2
-
-     !subgrid ETG
-     if (smflag.eq.1) then
-      call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
-     end if
 
      w3e(m)=w2e(m) + 0.5*dte*(  &
           (vxdum*kap + edot/ter-dum1*ppar*aparp/ter)*xnp     &
@@ -3639,6 +3639,11 @@ subroutine cint(n)
           +qel*vpdum*(-xdot*delbyp+ydot*delbxp+zdot*dadzp)   &
           -qel*vpar*delbxp*vp0
 
+     !subgrid ETG
+     if (smflag.eq.1) then
+      call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
+     end if
+
      x3e(m) = x2e(m) + dte*xdot
      y3e(m) = y2e(m) + dte*ydot
      z3e(m) = z2e(m) + dte*zdot
@@ -3656,11 +3661,6 @@ subroutine cint(n)
      !         dum1 = 0.5*rneu/eps**1.5*(1+h_coll)
      dum1 = nue/(2*(eps+0.1))**1.5  !*(1+h_coll)
      !         if(x<0.3)dum1=0.0
-
-     !subgrid ETG
-     if (smflag.eq.1) then
-      call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
-     end if
 
      dum = 1-w3e(m)*nonline*0.
      if(eldu.eq.1)dum = (tge/ter)**1.5*exp(vfac*(1/tge-1./ter))
@@ -5529,7 +5529,7 @@ subroutine smfl(smvpar,smmu,idrp,wx0,wx1,b,smflx)
    integer :: v,w,idv,idw,idr
    integer, intent(in) :: idrp
    real :: smnr,smtr,dvparg,dmug,w11,w12,w21,w22,denom,smgamp, &
-           eps,gf0fac,g2f0fac,smg2f0ep,smdiff
+           eps,gf0fac,g2f0fac,smg2f0ep,smdiff,gamGB
    real,dimension(:),allocatable :: smf0
    real, intent(in) :: smvpar,smmu,wx0,wx1,b
    real, intent(inout) :: smflx
@@ -5543,7 +5543,7 @@ subroutine smfl(smvpar,smmu,idrp,wx0,wx1,b,smflx)
    !         Need to convert flux data to GEM units.
    do w = 1,nwgene
       do v = 1,nvgene
-         smgamgm(w,v) = smgam(w,v)*(0.27244e-03*(smtr/smnr)*(amie))
+         smgamgm(w,v) = smgam(w,v)*(0.27244e-03*(smtr/smnr)*(amie))*(1/Rovera)**2 !TODO: Need rhoG/rhog term?
       end do
    end do
 
