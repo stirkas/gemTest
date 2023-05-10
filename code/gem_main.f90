@@ -114,8 +114,9 @@ subroutine init
   real :: grp,gxdgyp,jacp,jfnp,gn0ep,gt0ep,gt0ip,grdgtp,gthp
   real,DIMENSION (1:5) :: gn0sp
   real :: wx0,wx1,wz0,wz1,b
-  real :: nmax,tmax,prwid !Subgrid ETG variables.
-  integer :: v,w          !Subgrid ETG variables.
+  !Subgrid ETG vars.
+  real :: nmax,tmax,prwid,gamgnNorm,gamgmNorm,smvpargn,smmugn
+  integer :: v,w
 
   !jycheng
   namelist /primary_parameters/ itube,mimp,mcmp,chgi,chgc,imx,jmx,kmx,mmx,mmxe,nmx,nsmx,ntube,lxa, &
@@ -440,6 +441,11 @@ subroutine init
      end do
   end do
 
+  smdbg = 0
+  do while (smdbg == 1)
+     call sleep(1)
+  end do
+
   !     Subgrid ETG init.
   if(smflag==1)then
    !     Read gene output from file.
@@ -450,9 +456,13 @@ subroutine init
    read(117,*) smgam
    close(117)
 
-   smdbg = 0
-   do while (smdbg == 1)
-      call sleep(1)
+   !Convert to SI and then GEM units.
+   gamgnNorm = (4.66*1e-19/(2140*1.6e-19/(2*1.67e-27)))*0.002**2 !(nref/cref^2)*(rho*)^2
+   gamgmNorm = (4.66*1e-19/(2140*1.6e-19/(1.67e-27)))            !(nref/cref^2)
+   do w = 1,nwgene
+      do v = 1,nvgene
+         smgam(w,v)  = smgam(w,v)*gamgnNorm/gamgmNorm
+      end do
    end do
 
    !     Load cbc profiles if necessary.
@@ -471,9 +481,9 @@ subroutine init
       end do
    end if
 
-   !     Generate and normalize v-space grid from GENE.
-   smvpargn = sqrt(2.0/0.27244e-03) !GENE units of sqrt(2*(te/tref)/(me/mref)) Taken manually for now...
-   smmugn   = 1.0/2.0               !GENE units of Te0/Tref*(1/Bref) Taken manually for now...
+   !     Generate and normalize v-space grid from GENE in SI units for easy comparison to GEM.
+   smvpargn = sqrt(2.0*2140*1.67e-19/(0.27244e-03*2.0*1.67e-27))
+   smmugn   = 2140*1e-19/2.0
    do v = 1,nvgene
       smvgrd(v) = -lvgene*smvpargn + smvpargn*((v-1.0)/(nvgene-1.0))*2.0*lvgene
    end do
@@ -3358,7 +3368,8 @@ subroutine pint
 
      w3e(m)=w2e(m) + 0.5*dte*(  &
           (vxdum*kap + edot/ter-dum1*ppar*aparp/ter)*xnp     &
-          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp + smflx)*dum
+          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum &
+          + 0.5*dte*smflx
 
      !         if(x3e(m)>lx .or. x3e(m)<0.)w3e(m) = 0. 
 
@@ -3669,7 +3680,9 @@ subroutine cint(n)
      w3old = w3e(m)
      w3e(m)=w2e(m) + dte*(  &
           (vxdum*kap + edot/ter  -dum1*ppar*aparp/ter)*xnp    & 
-          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum
+          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum &
+          + 0.5*dte*smflx
+
 
      if(abs(w3e(m)).gt.4.0.and.nonline==1)then
         w3e(m) = 0.
@@ -5519,7 +5532,7 @@ end subroutine setw
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-subroutine smfl(smvpar,smmu,idrp,wx0,wx1,b,smflx)
+subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    !         Interpolate to ETG flux for subgrid model.
    !         Expects unnormalized values.
    !         Then multiply by prof 2nd deriv to get rad dep.
@@ -5528,10 +5541,10 @@ subroutine smfl(smvpar,smmu,idrp,wx0,wx1,b,smflx)
    implicit none
    integer :: v,w,idv,idw,idr
    integer, intent(in) :: idrp
-   real :: smnr,smtr,dvparg,dmug,w11,w12,w21,w22,denom,smgamp, &
-           eps,gf0fac,g2f0fac,smg2f0ep,smdiff,gamGB
+   real :: smnr,smtr,smvpar,smmu,dvparg,dmug,w11,w12,w21,w22,denom,smgamp, &
+           eps,gf0fac,g2f0fac,smg2f0ep,smdiff
    real,dimension(:),allocatable :: smf0
-   real, intent(in) :: smvpar,smmu,wx0,wx1,b
+   real, intent(in) :: vparp,mup,wx0,wx1,b
    real, intent(inout) :: smflx
 
    !         Set smflx to 0 just in case, so we can kick out early.
@@ -5540,20 +5553,21 @@ subroutine smfl(smvpar,smmu,idrp,wx0,wx1,b,smflx)
    smtr = wx0*t0e(idrp) + wx1*t0e(idrp+1)
    smnr = wx0*xn0e(idrp) + wx1*xn0e(idrp+1)
 
-   !         Need to convert flux data to GEM units.
-   do w = 1,nwgene
-      do v = 1,nvgene
-         smgamgm(w,v) = smgam(w,v)*(0.27244e-03*(smtr/smnr)*(amie))*(1/Rovera)**2 !TODO: Need rhoG/rhog term?
-      end do
-   end do
+   !         Convert values to SI unit for comparison.
+   smvpar = vparp*sqrt(smtr*2140.0*1.6e-19*amie/1.67e-27)
+   smmu   = mup*smtr*2140.0*1.6e-19/(b*2.0)
 
    !         If value in range then interpolate to GENE output.
-   !         Else just set to 0 and return immediately.
+   !         Else return with 0.0 set value.
    if (((smvpar.gt.smvgrd(1)).and.(smvpar.lt.smvgrd(nvgene))).and.((smmu.gt.smmugrd(1)).and.(smmu.lt.smmugrd(nwgene)))) then
       dvparg  = smvgrd(2)-smvgrd(1)
-      dmug    = smmugrd(2)-smmugrd(1)
       idv     = floor((smvpar-smvgrd(1))/dvparg) + 1
-      idw     = floor((smmu-smmugrd(1))/dmug) + 1
+      do w = 1,nwgene !mu not equidistant so need to loop.
+         if (smmu.le.smmugrd(w)) then
+            idw = w-1
+            exit
+         end if
+      end do
 
       !         Calculate weights for bilinear interpolation.
       denom   = ((smmugrd(idw+1)-smmugrd(idw))*(smvgrd(idv+1)-smvgrd(idv)))
@@ -5562,18 +5576,18 @@ subroutine smfl(smvpar,smmu,idrp,wx0,wx1,b,smflx)
       w21     = (smmu-smmugrd(idw))*(smvgrd(idv+1)-smvpar)/denom
       w22     = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
 
-      smgamp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
+      smgamp = w11*smgam(idw,idv) + w12*smgam(idw,idv+1) + w21*smgam(idw+1,idv) + w22*smgam(idw+1,idv+1)
    else 
       return
    end if
 
    !          Calculate gradients of f0e and add v-space dependence.
-   eps = (b*smmu+0.5*emass*smvpar*smvpar)/smtr
+   eps = (b*mup+0.5*emass*vparp*vparp)/smtr
    do idr = 0,nr
-      gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
-      g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
-      smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
-      smg2f0e(idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
+     gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
+     g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
+     smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
+     smg2f0e(idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
    end do
 
    !          Get flux divergence at particle radial position.
