@@ -456,15 +456,6 @@ subroutine init
    read(117,*) smgam
    close(117)
 
-   !Convert to SI and then GEM units.
-   gamgnNorm = (4.66*1e-19/(2140*1.6e-19/(2*1.67e-27)))*0.002**2 !(nref/cref^2)*(rho*)^2
-   gamgmNorm = (4.66*1e-19/(2140*1.6e-19/(1.67e-27)))            !(nref/cref^2)
-   do w = 1,nwgene
-      do v = 1,nvgene
-         smgam(w,v)  = smgam(w,v)*gamgnNorm/gamgmNorm
-      end do
-   end do
-
    !     Load cbc profiles if necessary.
    !     Constants taken from Gorler 2016 paper for CBC profiles.
    if(smcbc==1) then
@@ -5556,6 +5547,13 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    !         Convert values to SI unit for comparison.
    smvpar = vparp*sqrt(smtr*2140.0*1.6e-19*amie/1.67e-27)
    smmu   = mup*smtr*2140.0*1.6e-19/(b*2.0)
+   gamgnNorm = (4.66*1e-19/(2140*1.6e-19/(2*1.67e-27)))*0.002**2 !(nref/cref^2)*(rho*)^2
+   gamgmNorm = (smnr*4.66*1e-19/(smtr*2140*1.6e-19/(1.67e-27)))  !(nref/cref^2)
+   do w = 1,nwgene
+      do v = 1,nvgene
+         smgam(w,v)  = smgam(w,v)*gamgnNorm/gamgmNorm
+      end do
+   end do
 
    !         If value in range then interpolate to GENE output.
    !         Else return with 0.0 set value.
