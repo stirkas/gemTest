@@ -115,7 +115,7 @@ subroutine init
   real,DIMENSION (1:5) :: gn0sp
   real :: wx0,wx1,wz0,wz1,b
   !Subgrid ETG vars.
-  real :: nmax,tmax,prwid,gamgnNorm,gamgmNorm,smvpargn,smmugn
+  real :: nmax,tmax,prwid,smvpargn,smmugn
   integer :: v,w
 
   !jycheng
@@ -5533,7 +5533,7 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    integer :: v,w,idv,idw,idr
    integer, intent(in) :: idrp
    real :: smnr,smtr,smvpar,smmu,dvparg,dmug,w11,w12,w21,w22,denom,smgamp, &
-           eps,gf0fac,g2f0fac,smg2f0ep,smdiff
+           gamgnNorm,gamgmNorm,eps,gf0fac,g2f0fac,smg2f0ep,smdiff
    real,dimension(:),allocatable :: smf0
    real, intent(in) :: vparp,mup,wx0,wx1,b
    real, intent(inout) :: smflx
@@ -5584,8 +5584,8 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    do idr = 0,nr
      gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
      g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
-     smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
-     smg2f0e(idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
+     smgf0e(idr:idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
+     smg2f0e(idr:idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
    end do
 
    !          Get flux divergence at particle radial position.
