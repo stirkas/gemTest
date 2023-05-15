@@ -181,6 +181,7 @@ module gem_com
   character(len=20) :: genein                         !Input file w/ Gamma(vpar,mu) data from GENE.
   real,dimension(:,:),allocatable :: smgam            !Subgrid model diffusion coefficient for simple model.
   real,dimension(:),allocatable :: smvgrd,smmugrd     !Subgrid model GENE v-space grids.
+  real :: smtime                                      !Start time for sm model additions.
   integer :: smdbg=1
 
   save

@@ -132,7 +132,7 @@ subroutine init
   namelist /fluxtube/ Rovera,elon0,selon0,tria0,stria0,rmaj0p,q0,shat0,teti,tcti,rhoia,Rovlni,Rovlti, &
                        Rovlne,Rovlte,Rovlnc,Rovltc,ncne,nuacs
   namelist /others/ nrst,eprs,tor,ishift,width
-  namelist /subgrid/ smflag,smcbc,genein,nvgene,nwgene,lvgene,lwgene
+  namelist /subgrid/ smflag,smcbc,genein,smtime,nvgene,nwgene,lvgene,lwgene
 
   IU=cmplx(0.,1.)
   pi=4.0*atan(1.0)
@@ -4196,6 +4196,7 @@ subroutine jie(ip,n)
   real :: mydnidt(0:imx,0:jmx,0:1),mydnedt(0:imx,0:jmx,0:1)
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
   real :: grp,gxdgyp,rhox(4),rhoy(4),vncp,vparspp
+  real :: smflx=0.0 !Subgrid ETG var.
 
   nonfi = 1 
   nonfe = 1 
@@ -4477,6 +4478,11 @@ subroutine jie(ip,n)
 
      bstar = b*(1+emass*vpar/(qel*b)*bdcrvbp)
      enerb=(mue3(m)+emass*vpar*vpar/b)/qel*b/bstar*tor
+
+     !subgrid ETG
+     if (smflag.eq.1) then
+      call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
+     end if
 
      xdot = -tor*enerb/bfldp/bfldp*fp/radiusp*dbdtp*grcgtp
      ydot = +tor*enerb/bfldp/bfldp*fp/radiusp*grcgtp* &
@@ -5549,6 +5555,12 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
 
    !         Set smflx to 0 just in case, so we can kick out early.
    smflx = 0.0
+
+   !         Don't start until a global ITG steady state has been reached.
+   if (((tcurr-dt)-smtime) > 0.0) then
+      return
+   end if
+
    !         Get temp and dens at particle loc.
    smtr = wx0*t0e(idrp) + wx1*t0e(idrp+1)
    smnr = wx0*xn0e(idrp) + wx1*xn0e(idrp+1)
@@ -5586,8 +5598,8 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    do idr = 0,nr
      gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
      g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
-     smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
-     smg2f0e(idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
+     smgf0e(idr:idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
+     smg2f0e(idr:idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
    end do
 
    !          Get flux divergence at particle radial position.
