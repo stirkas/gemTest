@@ -5548,7 +5548,7 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    smflx = 0.0
 
    !         Don't start until a global ITG steady state has been reached.
-   if (((tcurr-dt)-smtime) > 0.0) then
+   if (((tcurr-dt)-smtime) < 0.0) then
       return
    end if
 
