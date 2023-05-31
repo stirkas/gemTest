@@ -179,10 +179,10 @@ module gem_com
   !Subgrid ETG variables.
   integer :: smflag,smcbc,nvgene,nwgene,lvgene,lwgene !Subgrid ETG flags and input dimensions. nv and nw for v// and mu grid dims. lv and lw for v-space box sizes.
   character(len=20) :: genein                         !Input file w/ Gamma(vpar,mu) data from GENE.
-  real,dimension(:,:),allocatable :: smgam            !Subgrid model diffusion coefficient for simple model.
+  real,dimension(:,:),allocatable :: smgamgn,smgamgm    !Subgrid model diffusion coefficient for simple model.
   real,dimension(:),allocatable :: smvgrd,smmugrd     !Subgrid model GENE v-space grids.
   real :: smtime                                      !Start time for sm model additions.
-  integer :: smdbg=1
+  integer :: smdbg=0
 
   save
 
@@ -293,7 +293,7 @@ contains
          pmtrxi(0:imx-1,0:jmx-1,1:nb,1:nb))
 
     !Subgrid ETG model allocations.
-    allocate(smgam(nwgene,nvgene)) !GENE file has columns for mu and rows for vpar.
+    allocate(smgamgn(nwgene,nvgene),smgamgm(nwgene,nvgene)) !GENE file has columns for mu and rows for vpar.
     allocate(smvgrd(nvgene),smmugrd(nwgene))
 
   end subroutine new_gem_com

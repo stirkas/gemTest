@@ -472,14 +472,11 @@ subroutine init
       end do
    end if
 
-   !     Generate and normalize v-space grid from GENE in SI units for easy comparison to GEM.
-   smvpargn = sqrt(2.0*2140*1.67e-19/(0.27244e-03*2.0*1.67e-27))
-   smmugn   = 2140*1e-19/2.0
    do v = 1,nvgene
-      smvgrd(v) = -lvgene*smvpargn + smvpargn*((v-1.0)/(nvgene-1.0))*2.0*lvgene
+      smvgrd(v) = -lvgene + ((v-1.0)/(nvgene-1.0))*2.0*lvgene
    end do
    !mu grid not equidistant by default. Use gaulag subroutine in GENE to compute knots(positions) and weights for integration.
-   smmugrd = (/0.05528629,0.29341334,0.73088143,1.38530959,2.28766024,3.49306838,5.11067388,7.42318758/)*smmugn
+   smmugrd = (/0.05528629,0.29341334,0.73088143,1.38530959,2.28766024,3.49306838,5.11067388,7.42318758/)
 
   end if
 
@@ -3227,7 +3224,8 @@ subroutine pint
   real :: myavptch,myaven
   integer :: myopz,myoen
   real :: x000,x001,x010,x011,x100,x101,x110,x111
-  real :: smflx=0.0 !Subgrid model flux val.
+  real :: smflx=0.0,smfrac=0.0 !Subgrid model flux val.
+  integer :: smcnt=0
 
   myopz = 0
   myoen = 0
@@ -3333,6 +3331,10 @@ subroutine pint
      !subgrid ETG
      if (smflag.eq.1) then
       call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
+      if (smflx.ge.1e-15) then
+         smcnt = smcnt + 1
+         smfrac = smfrac + 0.5*dte*smflx
+      end if
      end if
 
      x3e(m) = x2e(m) + 0.5*dte*xdot
@@ -3360,7 +3362,7 @@ subroutine pint
      w3e(m)=w2e(m) + 0.5*dte*(  &
           (vxdum*kap + edot/ter-dum1*ppar*aparp/ter)*xnp     &
           +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum &
-          + 0.5*dte*smflx
+          - 0.5*dte*smflx
 
      !         if(x3e(m)>lx .or. x3e(m)<0.)w3e(m) = 0. 
 
@@ -3438,6 +3440,10 @@ subroutine pint
      z3e(m) = min(z3e(m),lz-1.0e-8)
 
   end do
+
+  write(*,*) "%sm:", float(smcnt)*100.0/float(mme)
+  write(*,*) "smfrac avg:", smfrac/float(smcnt)
+
   call MPI_ALLREDUCE(myopz,nopz,1,MPI_integer, &
        MPI_SUM, MPI_COMM_WORLD,ierr)
   call MPI_ALLREDUCE(myoen,noen,1,MPI_integer, &
@@ -3672,7 +3678,7 @@ subroutine cint(n)
      w3e(m)=w2e(m) + dte*(  &
           (vxdum*kap + edot/ter  -dum1*ppar*aparp/ter)*xnp    & 
           +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum &
-          + 0.5*dte*smflx
+          - dte*smflx
 
 
      if(abs(w3e(m)).gt.4.0.and.nonline==1)then
@@ -4584,7 +4590,7 @@ subroutine jie(ip,n)
 
      dum2 = 1./b*lr0/q0*qhatp*fp/radiusp*grcgtp
      vxdum = (eyp/b+vpar/b*delbxp)*dum2 
-     wght0 = wght0*(vxdum*kap-xdot*exp1/ter-(ydot-vp0)*eyp/ter)*xnp
+     wght0 = wght0*(vxdum*kap-xdot*exp1/ter-(ydot-vp0)*eyp/ter - smflx)*xnp
 
      mydnedt(i,j,k)      =mydnedt(i,j,k)+wght0*w000(m)
      mydnedt(i+1,j,k)    =mydnedt(i+1,j,k)+wght0*w100(m)
@@ -5538,8 +5544,8 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    implicit none
    integer :: v,w,idv,idw,idr
    integer, intent(in) :: idrp
-   real :: smnr,smtr,smvpar,smmu,dvparg,dmug,w11,w12,w21,w22,denom,smgamp, &
-           gamgnNorm,gamgmNorm,eps,gf0fac,g2f0fac,smg2f0ep,smdiff
+   real :: smnr,smtr,smvpar,smmu,smvpargn,smmugn,dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp, &
+           gamgnNorm,gamgmNorm,eps,gf0fac,g2f0fac,smg2f0ep,smdiff,gamFac
    real,dimension(:),allocatable :: smf0
    real, intent(in) :: vparp,mup,wx0,wx1,b
    real, intent(inout) :: smflx
@@ -5556,14 +5562,17 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    smtr = wx0*t0e(idrp) + wx1*t0e(idrp+1)
    smnr = wx0*xn0e(idrp) + wx1*xn0e(idrp+1)
 
-   !         Convert values to SI unit for comparison.
-   smvpar = vparp*sqrt(smtr*2140.0*1.6e-19*amie/1.67e-27)
-   smmu   = mup*smtr*2140.0*1.6e-19/(b*2.0)
-   gamgnNorm = (4.66*1e-19/(2140*1.6e-19/(2*1.67e-27)))*0.002**2 !(nref/cref^2)*(rho*)^2
-   gamgmNorm = (smnr*4.66*1e-19/(smtr*2140*1.6e-19/(1.67e-27)))  !(nref/cref^2)
+   !         Convert values for comparison.
+   smvpargn = sqrt(2.0*2140*1.6e-19/(0.27244e-03*2.0*1.67e-27))
+   smmugn   = 2140*1.6e-19/2.0
+   smvpar = vparp*sqrt(smtr/(2.0*0.995)) !sqrt(smtr*2140.0*1.6e-19*amie/1.67e-27)/(smvpargn)
+   smmu   = mup*(smtr/b) !smtr*2140.0*1.6e-19/(b*2.0)/(smmugn)
+   gamgnNorm = (4.66*1e-19/(2140.0*1.6e-19/(1.99*1.67e-27)))*0.002**2 !(nref/cref^2)*(rho*)^2
+   gamgmNorm = (4.66*1e-19/(2140.0*1.6e-19/(1.67e-27)))  !(nref/cref^2) @ GENE data location.
+   gamFac    = 1.99*(0.002)**2 !gamgmNorm/gamgmNorm
    do w = 1,nwgene
       do v = 1,nvgene
-         smgam(w,v)  = smgam(w,v)*gamgnNorm/gamgmNorm
+         smgamgm(w,v)  = smgamgn(w,v)*gamFac
       end do
    end do
 
@@ -5586,7 +5595,7 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
       w21     = (smmu-smmugrd(idw))*(smvgrd(idv+1)-smvpar)/denom
       w22     = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
 
-      smgamp = w11*smgam(idw,idv) + w12*smgam(idw,idv+1) + w21*smgam(idw+1,idv) + w22*smgam(idw+1,idv+1)
+      smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
    else 
       return
    end if
@@ -5596,14 +5605,14 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    do idr = 0,nr
      gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
      g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
-     smgf0e(idr:idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
-     smg2f0e(idr:idr) = (gf0fac**2 + g2f0fac)*smf0e(idr)*exp(-1.0*eps)
+     smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
+     smg2f0e(idr) = (gf0fac**2 - g2f0fac)*smf0e(idr)*exp(-1.0*eps)
    end do
 
    !          Get flux divergence at particle radial position.
-   smdiff   = smgamp/smgf0e(nr/2)
+   smdiff   = smgamgmp/smgf0e(nr/2)
    smg2f0ep = wx0*smg2f0e(idrp) + wx1*smg2f0e(idrp+1)
-   smflx    = smdiff*smg2f0ep
+   smflx    = -1.0*smdiff*smg2f0ep
 
 end subroutine smfl
 
