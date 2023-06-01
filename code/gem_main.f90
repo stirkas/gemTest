@@ -472,11 +472,13 @@ subroutine init
       end do
    end if
 
+   smvpargn = sqrt(2.0/0.27244e-3) !Convert gene grids to reference units for easy conversion to SI.
+   smmugn = 1
    do v = 1,nvgene
-      smvgrd(v) = -lvgene + ((v-1.0)/(nvgene-1.0))*2.0*lvgene
+      smvgrd(v) = -lvgene*smvpargn + ((v-1.0)/(nvgene-1.0))*2.0*lvgene*smvpargn
    end do
    !mu grid not equidistant by default. Use gaulag subroutine in GENE to compute knots(positions) and weights for integration.
-   smmugrd = (/0.05528629,0.29341334,0.73088143,1.38530959,2.28766024,3.49306838,5.11067388,7.42318758/)
+   smmugrd = (/0.05528629,0.29341334,0.73088143,1.38530959,2.28766024,3.49306838,5.11067388,7.42318758/)*smmugn
 
   end if
 
@@ -3224,13 +3226,18 @@ subroutine pint
   real :: myavptch,myaven
   integer :: myopz,myoen
   real :: x000,x001,x010,x011,x100,x101,x110,x111
-  real :: smflx=0.0,smfrac=0.0 !Subgrid model flux val.
-  integer :: smcnt=0
+  real :: smflx,smfrac !Subgrid model flux vals.
+  integer :: smcnt
 
   myopz = 0
   myoen = 0
   myavptch = 0.
   myaven = 0.
+
+  smfrac = 0.0
+  smcnt = 0
+  smflx = 0.0
+
   pidum = 1./(pi*2)**1.5*(vwidthe)**3
   do m=1,mme
      r=x2e(m)-0.5*lx+lr0
@@ -3331,9 +3338,10 @@ subroutine pint
      !subgrid ETG
      if (smflag.eq.1) then
       call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
-      if (smflx.ge.1e-15) then
+      write(*,*) u2e(m),mue2(m),dte,smflx,-1.0*0.5*dte*smflx
+      if (abs(smflx).gt.1e-15) then
          smcnt = smcnt + 1
-         smfrac = smfrac + 0.5*dte*smflx
+         smfrac = smfrac - 0.5*dte*smflx
       end if
      end if
 
@@ -3442,7 +3450,7 @@ subroutine pint
   end do
 
   write(*,*) "%sm:", float(smcnt)*100.0/float(mme)
-  write(*,*) "smfrac avg:", smfrac/float(smcnt)
+  write(*,*) "smfrac avg:", smfrac,smcnt,smfrac/float(smcnt)
 
   call MPI_ALLREDUCE(myopz,nopz,1,MPI_integer, &
        MPI_SUM, MPI_COMM_WORLD,ierr)
@@ -3549,6 +3557,7 @@ subroutine cint(n)
   mytotn = 0.
   mytrap = 0.
   mynowe = 0
+  smflx = 0.0
 
   pidum = 1./(pi*2)**1.5*(vwidthe)**3
   do m=1,mme
@@ -4202,6 +4211,7 @@ subroutine jie(ip,n)
   jiony = 0.
   drhoidt = 0.
   ns=1
+  smflx = 0.0
 
   pidum = 1./(pi*2)**1.5*(vwidth)**3
   if(isuni.eq.0)pidum = 1.
@@ -5542,11 +5552,11 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    use gem_com
    use gem_equil
    implicit none
-   integer :: v,w,idv,idw,idr
+   integer :: v,w,idv,idw,ind,idr
    integer, intent(in) :: idrp
-   real :: smnr,smtr,smvpar,smmu,smvpargn,smmugn,dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp, &
-           gamgnNorm,gamgmNorm,eps,gf0fac,g2f0fac,smg2f0ep,smdiff,gamFac
-   real,dimension(:),allocatable :: smf0
+   integer, dimension(3) :: inds
+   real :: smnr,smtr,smvpar,smmu,smvparfac,smmufac,dvparg,dmug,w11,w12,w21,w22,denom, &
+           smgamgmp,eps,gf0fac,g2f0fac,smg2f0ep,smdiff,gamFac
    real, intent(in) :: vparp,mup,wx0,wx1,b
    real, intent(inout) :: smflx
 
@@ -5563,13 +5573,11 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    smnr = wx0*xn0e(idrp) + wx1*xn0e(idrp+1)
 
    !         Convert values for comparison.
-   smvpargn = sqrt(2.0*2140*1.6e-19/(0.27244e-03*2.0*1.67e-27))
-   smmugn   = 2140*1.6e-19/2.0
-   smvpar = vparp*sqrt(smtr/(2.0*0.995))/sqrt(60.0) !sqrt(smtr*2140.0*1.6e-19*amie/1.67e-27)/(smvpargn)
-   smmu   = mup*(smtr/b) !smtr*2140.0*1.6e-19/(b*2.0)/(smmugn)
-   gamgnNorm = (4.66*1e-19/(2140.0*1.6e-19/(1.99*1.67e-27)))*0.002**2 !(nref/cref^2)*(rho*)^2
-   gamgmNorm = (4.66*1e-19/(2140.0*1.6e-19/(1.67e-27)))  !(nref/cref^2) @ GENE data location.
-   gamFac    = 1.99*(0.002)**2 !gamgmNorm/gamgmNorm
+   smvparfac = sqrt(1.99) !vpargm/vpargn
+   smmufac   = 1 !mugm/mugn
+   smvpar = vparp*smvparfac
+   smmu   = mup*smmufac
+   gamFac = 1.99*(0.002)**2 !gamgnNorm/gamgmNorm, note gamgmNorm at r0 -> smnr = smtr = 1 if flux data from r=r0.
    do w = 1,nwgene
       do v = 1,nvgene
          smgamgm(w,v)  = smgamgn(w,v)*gamFac
@@ -5596,15 +5604,15 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
       w22     = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
 
       smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
-
-      write(*,*) smvpar,smmu,idv,idw,smgamgmp
    else 
       return
    end if
 
    !          Calculate gradients of f0e and add v-space dependence.
    eps = (b*mup+0.5*emass*vparp*vparp)/smtr
-   do idr = 0,nr
+   inds = (/idrp,idrp+1,nr/2/)
+   do ind = 1,size(inds)
+     idr = inds(ind)
      gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
      g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
      smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
