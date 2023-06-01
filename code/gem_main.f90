@@ -453,7 +453,7 @@ subroutine init
    do i = 1,6 !Skip the comment lines in GENE ASCII flux vsp output.
       read(117,*)
    end do
-   read(117,*) smgam
+   read(117,*) smgamgn
    close(117)
 
    !     Load cbc profiles if necessary.
@@ -5565,7 +5565,7 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    !         Convert values for comparison.
    smvpargn = sqrt(2.0*2140*1.6e-19/(0.27244e-03*2.0*1.67e-27))
    smmugn   = 2140*1.6e-19/2.0
-   smvpar = vparp*sqrt(smtr/(2.0*0.995)) !sqrt(smtr*2140.0*1.6e-19*amie/1.67e-27)/(smvpargn)
+   smvpar = vparp*sqrt(smtr/(2.0*0.995))/sqrt(60.0) !sqrt(smtr*2140.0*1.6e-19*amie/1.67e-27)/(smvpargn)
    smmu   = mup*(smtr/b) !smtr*2140.0*1.6e-19/(b*2.0)/(smmugn)
    gamgnNorm = (4.66*1e-19/(2140.0*1.6e-19/(1.99*1.67e-27)))*0.002**2 !(nref/cref^2)*(rho*)^2
    gamgmNorm = (4.66*1e-19/(2140.0*1.6e-19/(1.67e-27)))  !(nref/cref^2) @ GENE data location.
@@ -5596,6 +5596,8 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
       w22     = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
 
       smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
+
+      write(*,*) smvpar,smmu,idv,idw,smgamgmp
    else 
       return
    end if
