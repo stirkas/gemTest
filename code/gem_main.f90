@@ -467,8 +467,8 @@ subroutine init
          smf0e(i)     = xn0e(i)*(emass/(2*pi*t0e(i)))**(1.5)
          smgradn0(i)  = (a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
          smgradt0(i)  = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
-         smgrad2n0(i) = (a/rmaj0)**2*(-2*(rmaj0/a)*(nmax/prwid)*TANH((r-r0)/(prwid*a))*(1/COSH((r-r0)/(prwid*a)))**2)
-         smgrad2t0(i) = (a/rmaj0)**2*(-2*(rmaj0/a)*(tmax/prwid)*TANH((r-r0)/(prwid*a))*(1/COSH((r-r0)/(prwid*a)))**2)
+         smgrad2n0(i) = (a/rmaj0)**2*-1.0*(nmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(nmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
+         smgrad2t0(i) = (a/rmaj0)**2*-1.0*(tmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(tmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
       end do
    end if
 
@@ -5556,7 +5556,7 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    integer, intent(in) :: idrp
    integer, dimension(3) :: inds
    real :: smnr,smtr,smvpar,smmu,smvparfac,smmufac,dvparg,dmug,w11,w12,w21,w22,denom, &
-           smgamgmp,eps,gf0fac,g2f0fac,smg2f0ep,smdiff,gamFac
+           smgamgmp,eps,gf0fac,g2f0fac,smg2t0ep,smdiff,gamFac
    real, intent(in) :: vparp,mup,wx0,wx1,b
    real, intent(inout) :: smflx
 
@@ -5609,20 +5609,21 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    end if
 
    !          Calculate gradients of f0e and add v-space dependence.
-   eps = (b*mup+0.5*emass*vparp*vparp)/smtr
-   inds = (/idrp,idrp+1,nr/2/)
-   do ind = 1,size(inds)
-     idr = inds(ind)
-     gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
-     g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
-     smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
-     smg2f0e(idr) = (gf0fac**2 - g2f0fac)*smf0e(idr)*exp(-1.0*eps)
-   end do
+   !eps = (b*mup+0.5*emass*vparp*vparp)/smtr
+   !inds = (/idrp,idrp+1,nr/2/)
+   !do ind = 1,size(inds)
+   !  idr = inds(ind)
+   !  gf0fac  = (smgradn0(idr) - smgradt0(idr)*(1.5 - eps))
+   !  g2f0fac = (smgrad2n0(idr) - smgrad2t0(idr)*(1.5 - eps))
+   !  smgf0e(idr)  = gf0fac*smf0e(idr)*exp(-1.0*eps)
+   !  smg2f0e(idr) = (gf0fac**2 - g2f0fac)*smf0e(idr)*exp(-1.0*eps)
+   !end do
 
    !          Get flux divergence at particle radial position.
-   smdiff   = smgamgmp/smgf0e(nr/2)
-   smg2f0ep = wx0*smg2f0e(idrp) + wx1*smg2f0e(idrp+1)
-   smflx    = -1.0*smdiff*smg2f0ep
+   smdiff   = smgamgmp/smgradt0(nr/2)
+   !smg2f0ep = wx0*smg2f0e(idrp) + wx1*smg2f0e(idrp+1)
+   smg2t0ep = wx0*smgrad2t0(idrp) + wx1*smgrad2t0(idrp+1)
+   smflx    = -1.0*smdiff*smg2t0ep
 
 end subroutine smfl
 
