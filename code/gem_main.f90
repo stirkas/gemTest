@@ -5620,10 +5620,10 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    !end do
 
    !          Get flux divergence at particle radial position.
-   smdiff   = smgamgmp/smgradt0(nr/2)
+   smdiff   = smgamgmp/(-1.0*smgradt0(nr/2))
    !smg2f0ep = wx0*smg2f0e(idrp) + wx1*smg2f0e(idrp+1)
    smg2t0ep = wx0*smgrad2t0(idrp) + wx1*smgrad2t0(idrp+1)
-   smflx    = -1.0*smdiff*smg2t0ep
+   smflx    = -1.0*smdiff*(-1.0*smg2t0ep)
 
 end subroutine smfl
 
