@@ -465,10 +465,10 @@ subroutine init
       do i=0,nr
          r = (rin+i*dr)
          smf0e(i)     = xn0e(i)*(emass/(2*pi*t0e(i)))**(1.5)
-         smgradn0(i)  = (a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
-         smgradt0(i)  = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
-         smgrad2n0(i) = (a/rmaj0)**2*-1.0*(nmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(nmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
-         smgrad2t0(i) = (a/rmaj0)**2*-1.0*(tmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(tmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
+         smgradn0(i)  = -1.0*(a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
+         smgradt0(i)  = -1.0*(a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
+         smgrad2n0(i) = (a/rmaj0)**2*(nmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(nmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
+         smgrad2t0(i) = (a/rmaj0)**2*(tmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(tmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
       end do
    end if
 
@@ -5620,10 +5620,10 @@ subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    !end do
 
    !          Get flux divergence at particle radial position.
-   smdiff   = smgamgmp/(-1.0*smgradt0(nr/2))
+   smdiff   = -1.0*smgamgmp/(smgradt0(nr/2))
    !smg2f0ep = wx0*smg2f0e(idrp) + wx1*smg2f0e(idrp+1)
    smg2t0ep = wx0*smgrad2t0(idrp) + wx1*smgrad2t0(idrp+1)
-   smflx    = -1.0*smdiff*(-1.0*smg2t0ep)
+   smflx    = -1.0*smdiff*smg2t0ep
 
 end subroutine smfl
 
