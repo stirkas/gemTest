@@ -465,10 +465,10 @@ subroutine init
       do i=0,nr
          r = (rin+i*dr)
          smf0e(i)     = xn0e(i)*(emass/(2*pi*t0e(i)))**(1.5)
-         smgradn0(i)  = -1.0*(a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
-         smgradt0(i)  = -1.0*(a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
-         smgrad2n0(i) = (a/rmaj0)**2*(nmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(nmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
-         smgrad2t0(i) = (a/rmaj0)**2*(tmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(tmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
+         smgradn0(i)  = (a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
+         smgradt0(i)  = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
+         smgrad2n0(i) = -(a/rmaj0)**2*(nmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(nmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
+         smgrad2t0(i) = -(a/rmaj0)**2*(tmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(tmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
       end do
    end if
 
