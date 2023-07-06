@@ -116,7 +116,7 @@ subroutine init
   real :: wx0,wx1,wz0,wz1,b
   !Subgrid ETG vars.
   real :: nmax,tmax,prwid,smvpargn,smmugn
-  integer :: v,w
+  integer :: v
 
   !jycheng
   namelist /primary_parameters/ itube,mimp,mcmp,chgi,chgc,imx,jmx,kmx,mmx,mmxe,nmx,nsmx,ntube,lxa, &
