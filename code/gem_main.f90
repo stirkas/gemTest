@@ -3538,7 +3538,7 @@ subroutine cint(n)
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
   real :: grp,gxdgyp,psp,pzp,psip2p,bdcrvbp,curvbzp,dipdrp,bstar
   real :: x000,x001,x010,x011,x100,x101,x110,x111
-  real :: smflx=0.0 !Subgrid model flux val.
+  real :: smflx !Subgrid model flux val.
 
   sbuf(1:10) = 0.
   rbuf(1:10) = 0.
@@ -4202,7 +4202,7 @@ subroutine jie(ip,n)
   real :: mydnidt(0:imx,0:jmx,0:1),mydnedt(0:imx,0:jmx,0:1)
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
   real :: grp,gxdgyp,rhox(4),rhoy(4),vncp,vparspp
-  real :: smflx=0.0 !Subgrid ETG var.
+  real :: smflx !Subgrid ETG var.
 
   nonfi = 1 
   nonfe = 1 
@@ -5548,7 +5548,7 @@ end subroutine setw
 subroutine smfl(vparp,mup,idrp,wx0,wx1,b,smflx)
    !         Interpolate to ETG flux for subgrid model.
    !         Expects unnormalized values.
-   !         Then multiply by prof 2nd deriv to get rad dep.
+   !         Get diff coeff, then multiply by prof 2nd deriv to get rad dep.
    use gem_com
    use gem_equil
    implicit none
