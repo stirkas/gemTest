@@ -450,9 +450,9 @@ subroutine init
   if(smflag==1)then
    !     Read gene output from file.
    open(117,file=genein,status='old',action='read')
-   do i = 1,6 !Skip the comment lines in GENE ASCII flux vsp output.
-      read(117,*)
-   end do
+   !do i = 1,6 !Skip the comment lines in GENE ASCII flux vsp output.
+   !   read(117,*)
+   !end do
    read(117,*) smgamgn
    close(117)
 
@@ -473,7 +473,7 @@ subroutine init
    end if
 
    smvpargn = sqrt(2.0/0.27244e-3) !Convert gene grids to reference units for easy conversion to SI.
-   smmugn = 1
+   smmugn = 1.0
    do v = 1,nvgene
       smvgrd(v) = -lvgene*smvpargn + ((v-1.0)/(nvgene-1.0))*2.0*lvgene*smvpargn
    end do
@@ -3226,8 +3226,10 @@ subroutine pint
   real :: myavptch,myaven
   integer :: myopz,myoen
   real :: x000,x001,x010,x011,x100,x101,x110,x111
-  real :: smflx,smfrac !Subgrid model flux vals.
-  integer :: smcnt
+  !Subgrid model.
+  real :: smflx,smfrac,smfracabs,smnr,smtr,smvpar,smmu,smvparfac,smmufac,dvparg,dmug,w11,w12,w21,w22,denom, &
+     smgamgmp,smg2t0ep,smdiff,gamFac
+  integer :: smcnt,v,w,idv,idw
 
   myopz = 0
   myoen = 0
@@ -3235,8 +3237,30 @@ subroutine pint
   myaven = 0.
 
   smfrac = 0.0
+  smfracabs = 0.0
   smcnt = 0
   smflx = 0.0
+  smnr = 0.0
+  smtr = 0.0
+  smvpar = 0.0
+  smmu = 0.0
+  smvparfac = 0.0
+  smmufac = 0.0
+  dvparg = 0.0
+  dmug = 0.0
+  w11 = 0.0
+  w12 = 0.0
+  w21 = 0.0
+  w22 = 0.0
+  denom = 0.0
+  smgamgmp = 0.0
+  smg2t0ep = 0.0
+  smdiff = 0.0
+  gamFac = 0.0
+  v = 0
+  w = 0
+  idv = 0
+  idw = 0
 
   pidum = 1./(pi*2)**1.5*(vwidthe)**3
   do m=1,mme
@@ -3337,13 +3361,63 @@ subroutine pint
 
      !subgrid ETG
      if (smflag.eq.1) then
-      call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
-      write(*,*) u2e(m),mue2(m),dte,smflx,-1.0*0.5*dte*smflx
-      if (abs(smflx).gt.1e-15) then
-         smcnt = smcnt + 1
-         smfrac = smfrac - 0.5*dte*smflx
-      end if
+        !         Don't start until a global ITG steady state has been reached.
+        if (((tcurr-dt)-smtime) > 0.0) then
+           !         Get temp and dens at particle loc.
+           smtr = wx0*t0e(i) + wx1*t0e(i+1)
+           smnr = wx0*xn0e(i) + wx1*xn0e(i+1)
+        
+           !         Convert values for comparison.
+           smvparfac = sqrt(1.99) !vpargm/vpargn
+           smmufac   = 1.0 !mugm/mugn
+           smvpar = u2e(m)*smvparfac
+           smmu   = mue2(m)*smmufac
+           gamFac = 1.99*(0.002)**2 !gamgnNorm/gamgmNorm, note gamgmNorm at r0 -> smnr = smtr = 1 if flux data from r=r0.
+           do w = 1,nwgene
+              do v = 1,nvgene
+                 smgamgm(w,v)  = smgamgn(w,v)*gamFac
+              end do
+           end do
+        
+           !         If value in range then interpolate to GENE output.
+           !         Else return with 0.0 set value.
+           if (((smvpar.gt.smvgrd(1)).and.(smvpar.lt.smvgrd(nvgene))).and.((smmu.gt.smmugrd(1)).and.(smmu.lt.smmugrd(nwgene)))) then
+              dvparg  = smvgrd(2)-smvgrd(1)
+              idv     = floor((smvpar-smvgrd(1))/dvparg) + 1
+              do w = 1,nwgene !mu not equidistant so need to loop.
+                 if (smmu.le.smmugrd(w)) then
+                    idw = w-1
+                    exit
+                 end if
+              end do
+        
+              !         Calculate weights for bilinear interpolation.
+              denom   = ((smmugrd(idw+1)-smmugrd(idw))*(smvgrd(idv+1)-smvgrd(idv)))
+              w11     = (smmugrd(idw+1)-smmu)*(smvgrd(idv+1)-smvpar)/denom
+              w12     = (smmugrd(idw+1)-smmu)*(smvpar-smvgrd(idv))/denom
+              w21     = (smmu-smmugrd(idw))*(smvgrd(idv+1)-smvpar)/denom
+              w22     = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
+        
+              smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
+   
+              !          Get flux divergence at particle radial position.
+              smdiff   = -1.0*smgamgmp/(smgradt0(nr/2))
+              smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
+              smflx    = -1.0*smdiff*smg2t0ep
+           end if
+        end if
+
      end if
+
+     !if (smflag.eq.1) then
+     ! call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
+     ! write(*,*) u2e(m),mue2(m),dte,smflx,-1.0*0.5*dte*smflx
+     if (abs(smflx).gt.1e-15) then
+        smcnt = smcnt + 1
+        smfrac = smfrac - 0.5*dte*smflx
+        smfracabs = smfracabs - 0.5*dte*abs(smflx)
+     end if
+     !end if
 
      x3e(m) = x2e(m) + 0.5*dte*xdot
      y3e(m) = y2e(m) + 0.5*dte*ydot
@@ -3450,7 +3524,7 @@ subroutine pint
   end do
 
   write(*,*) "%sm:", float(smcnt)*100.0/float(mme)
-  write(*,*) "smfrac avg:", smfrac,smcnt,smfrac/float(smcnt)
+  write(*,*) "smfrac avg:", smfrac,smcnt,smfrac/float(smcnt),smfracabs/float(smcnt)
 
   call MPI_ALLREDUCE(myopz,nopz,1,MPI_integer, &
        MPI_SUM, MPI_COMM_WORLD,ierr)
@@ -3538,7 +3612,10 @@ subroutine cint(n)
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
   real :: grp,gxdgyp,psp,pzp,psip2p,bdcrvbp,curvbzp,dipdrp,bstar
   real :: x000,x001,x010,x011,x100,x101,x110,x111
-  real :: smflx !Subgrid model flux val.
+  !Subgrid model.
+  real :: smflx,smnr,smtr,smvpar,smmu,smvparfac,smmufac,dvparg,dmug,w11,w12,w21,w22,denom, &
+     smgamgmp,smg2t0ep,smdiff,gamFac
+  integer :: v,w,idv,idw
 
   sbuf(1:10) = 0.
   rbuf(1:10) = 0.
@@ -3557,7 +3634,29 @@ subroutine cint(n)
   mytotn = 0.
   mytrap = 0.
   mynowe = 0
+  
   smflx = 0.0
+  smnr = 0.0
+  smtr = 0.0
+  smvpar = 0.0
+  smmu = 0.0
+  smvparfac = 0.0
+  smmufac = 0.0
+  dvparg = 0.0
+  dmug = 0.0
+  w11 = 0.0
+  w12 = 0.0
+  w21 = 0.0
+  w22 = 0.0
+  denom = 0.0
+  smgamgmp = 0.0
+  smg2t0ep = 0.0
+  smdiff = 0.0
+  gamFac = 0.0
+  v = 0
+  w = 0
+  idv = 0
+  idw = 0
 
   pidum = 1./(pi*2)**1.5*(vwidthe)**3
   do m=1,mme
@@ -3658,8 +3757,56 @@ subroutine cint(n)
 
      !subgrid ETG
      if (smflag.eq.1) then
-      call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
-     end if
+       !         Don't start until a global ITG steady state has been reached.
+       if (((tcurr-dt)-smtime) > 0.0) then
+          !         Get temp and dens at particle loc.
+          smtr = wx0*t0e(i) + wx1*t0e(i+1)
+          smnr = wx0*xn0e(i) + wx1*xn0e(i+1)
+       
+          !         Convert values for comparison.
+          smvparfac = sqrt(1.99) !vpargm/vpargn
+          smmufac   = 1.0 !mugm/mugn
+          smvpar = u3e(m)*smvparfac
+          smmu   = mue3(m)*smmufac
+          gamFac = 1.99*(0.002)**2 !gamgnNorm/gamgmNorm, note gamgmNorm at r0 -> smnr = smtr = 1 if flux data from r=r0.
+          do w = 1,nwgene
+             do v = 1,nvgene
+                smgamgm(w,v)  = smgamgn(w,v)*gamFac
+             end do
+          end do
+       
+          !         If value in range then interpolate to GENE output.
+          !         Else return with 0.0 set value.
+          if (((smvpar.gt.smvgrd(1)).and.(smvpar.lt.smvgrd(nvgene))).and.((smmu.gt.smmugrd(1)).and.(smmu.lt.smmugrd(nwgene)))) then
+             dvparg  = smvgrd(2)-smvgrd(1)
+             idv     = floor((smvpar-smvgrd(1))/dvparg) + 1
+             do w = 1,nwgene !mu not equidistant so need to loop.
+                if (smmu.le.smmugrd(w)) then
+                   idw = w-1
+                   exit
+                end if
+             end do
+       
+             !         Calculate weights for bilinear interpolation.
+             denom   = ((smmugrd(idw+1)-smmugrd(idw))*(smvgrd(idv+1)-smvgrd(idv)))
+             w11     = (smmugrd(idw+1)-smmu)*(smvgrd(idv+1)-smvpar)/denom
+             w12     = (smmugrd(idw+1)-smmu)*(smvpar-smvgrd(idv))/denom
+             w21     = (smmu-smmugrd(idw))*(smvgrd(idv+1)-smvpar)/denom
+             w22     = (smmu-smmugrd(idw))*(smvpar-smvgrd(idv))/denom
+       
+             smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
+  
+             !          Get flux divergence at particle radial position.
+             smdiff   = -1.0*smgamgmp/(smgradt0(nr/2))
+             smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
+             smflx    = -1.0*smdiff*smg2t0ep
+          end if
+       end if  
+      end if
+     !!subgrid ETG
+     !if (smflag.eq.1) then
+     ! call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
+     !end if
 
      x3e(m) = x2e(m) + dte*xdot
      y3e(m) = y2e(m) + dte*ydot
@@ -4487,9 +4634,9 @@ subroutine jie(ip,n)
      enerb=(mue3(m)+emass*vpar*vpar/b)/qel*b/bstar*tor
 
      !subgrid ETG
-     if (smflag.eq.1) then
-      call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
-     end if
+     !if (smflag.eq.1) then
+     ! call smfl(u3e(m),mue3(m),i,wx0,wx1,b,smflx)
+     !end if
 
      xdot = -tor*enerb/bfldp/bfldp*fp/radiusp*dbdtp*grcgtp
      ydot = +tor*enerb/bfldp/bfldp*fp/radiusp*grcgtp* &
