@@ -181,6 +181,7 @@ module gem_com
   character(len=20) :: genein                         !Input file w/ Gamma(vpar,mu) data from GENE.
   real,dimension(:,:),allocatable :: smgamgn,smgamgm    !Subgrid model diffusion coefficient for simple model.
   real,dimension(:),allocatable :: smvgrd,smmugrd     !Subgrid model GENE v-space grids.
+  real,dimension(:),allocatable :: smvgrdp,smmugrdp   !Subgrid model v-space grids by particle. For use in smflx calculation with converting gene units to gem units repeatedly.
   real :: smtime                                      !Start time for sm model additions.
   integer :: smdbg=0
 
@@ -195,13 +196,13 @@ contains
     if ((kmx-1).gt.4) then
       yyRange = 4
     else
-      yyrange = kmx-1
+      yyrange = kmx!-1 !SMCHANGE
     endif
 
     allocate(workx(4*imx),worky(4*jmx),workz(4*kmx))
     allocate(tmpx(0:imx-1))
     allocate(tmpy(0:jmx-1))
-    allocate(tmpz(0:kmx-1))
+    allocate(tmpz(0:1)) !SMCHANGE kmx-1))
     allocate(rwx(nsmx,4),rwy(nsmx,4))
     allocate(mm(nsmx),tmm(nsmx),lr(nsmx))
     allocate(tets(nsmx),mims(nsmx),q(nsmx))
@@ -295,6 +296,7 @@ contains
     !Subgrid ETG model allocations.
     allocate(smgamgn(nwgene,nvgene),smgamgm(nwgene,nvgene)) !GENE file has columns for mu and rows for vpar.
     allocate(smvgrd(nvgene),smmugrd(nwgene))
+    allocate(smvgrdp(nvgene),smmugrdp(nwgene))
 
   end subroutine new_gem_com
 
