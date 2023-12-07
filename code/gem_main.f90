@@ -3227,7 +3227,7 @@ subroutine pint
   !Subgrid model.
   real :: smflx,smfrac,smfracabs,smnr,smtr,smvpar,smmu,smvpargn,smvpargm,smmugn,smmugm,dvparg,dmug,w11,w12,w21,w22,denom, &
      smgamgmp,smg2t0ep,smdiff,gamgm,gamgn
-  integer :: smcnt,v,w,idv,idw
+  integer :: smcnt,v,w,idv,idw,smbool
 
   myopz = 0
   myoen = 0
@@ -3236,6 +3236,7 @@ subroutine pint
 
   smfrac = 0.0
   smfracabs = 0.0
+  smbool = 0
   smcnt = 0
   smflx = 0.0
   smnr = 0.0
@@ -3420,20 +3421,13 @@ subroutine pint
               smdiff   = -1.0*smgamgmp/(smgradt0(nr/2))
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
               smflx    = -1.0*smdiff*smg2t0ep
+              
+              smbool = 1
+              smcnt = smcnt + 1
            end if
         end if
 
      end if
-
-     !if (smflag.eq.1) then
-     ! call smfl(u2e(m),mue2(m),i,wx0,wx1,b,smflx)
-     ! write(*,*) u2e(m),mue2(m),dte,smflx,-1.0*0.5*dte*smflx
-     if (abs(smflx).gt.1e-15) then
-        smcnt = smcnt + 1
-        smfrac = smfrac - 0.5*dte*smflx
-        smfracabs = smfracabs - 0.5*dte*abs(smflx)
-     end if
-     !end if
 
      x3e(m) = x2e(m) + 0.5*dte*xdot
      y3e(m) = y2e(m) + 0.5*dte*ydot
@@ -3462,6 +3456,12 @@ subroutine pint
           +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum &
           - 0.5*dte*smflx
 
+
+     if (smbool.eq.1) then
+       smfrac = smfrac - 0.5*dte*smflx*fovg
+       smfracabs = smfracabs - 0.5*dte*abs(smflx)*fovg
+       smfracupd = smfracupd - 0.5*dte*smflx*SIN(2.0*mypi*y2e(m)/ly)*fovg
+     end if
      !         if(x3e(m)>lx .or. x3e(m)<0.)w3e(m) = 0. 
 
      !         go to 333
@@ -3797,7 +3797,7 @@ subroutine cint(n)
           do w = 1,nwgene
             smmugrdp(w) = smmugrd(w)*smmugn/smmugm
           end do
-          !         Finally need conversion factor for flux in GENE vs GEM. Does this also need radial dependence, maybe just rhostar???
+          !         Finally need conversion factor for flux in GENE vs GEM.
           !         Seems GENE and GEM both use r0 data for gB units for fluxes. Does this apply to terms in the Vlasov eqn though???
           gamgn = 4.66e19/(2140*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
           gamgm = 4.66e19/(2140*1.60217663e-19/(2*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
