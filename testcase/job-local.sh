@@ -17,6 +17,7 @@ mkdir -p dump
 export OMP_NUM_THREADS=8
 #export OMP_STACKSIZE=1G
 
+#mpirun -n 2 ./gem_main > run.out 2> run.err !involves going through SMCHANGE's to work again.
 mpirun -n 1 ./gem_main > run.out 2> run.err
 
 wait
