@@ -441,7 +441,7 @@ subroutine init
      end do
   end do
 
-  smdbg = 0
+  smdbg = 1
   do while (smdbg == 1)
      call sleep(1)
   end do
@@ -3383,7 +3383,7 @@ subroutine pint
            do w = 1,nwgene
              smmugrdp(w) = smmugrd(w)*smmugn/smmugm
            end do
-           !         Finally need conversion factor for flux in GENE vs GEM. Does this also need radial dependence, maybe just rhostar???
+           !         Finally need conversion factor for flux in GENE vs GEM.
            !         Seems GENE and GEM both use r0 data for gB units for fluxes. Does this apply to terms in the Vlasov eqn though???
            gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
            gamgm = 4.66e19/(2140.0*1.60217663e-19/(2.0*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
