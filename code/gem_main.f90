@@ -3225,9 +3225,9 @@ subroutine pint
   integer :: myopz,myoen
   real :: x000,x001,x010,x011,x100,x101,x110,x111
   !Subgrid model.
-  real :: smflx,smfrac,smfracabs,smnr,smtr,smvpar,smmu,smvpargn,smvpargm,smmugn,smmugm,dvparg,dmug,w11,w12,w21,w22,denom, &
+  real :: smflx,smfrac,smfracabs,smfracupd,smnr,smtr,smvpar,smmu,smvpargn,smvpargm,smmugn,smmugm,dvparg,dmug,w11,w12,w21,w22,denom, &
      smgamgmp,smg2t0ep,smdiff,gamgm,gamgn
-  integer :: smcnt,v,w,idv,idw,smbool
+  integer :: smcnt,v,w,idv,idw,nr0,smbool
 
   myopz = 0
   myoen = 0
@@ -3236,6 +3236,7 @@ subroutine pint
 
   smfrac = 0.0
   smfracabs = 0.0
+  smfracupd = 0.0
   smbool = 0
   smcnt = 0
   smflx = 0.0
@@ -3265,6 +3266,7 @@ subroutine pint
   idw = 0
   smmugrdp = 0.0
   smvgrdp = 0.0
+  nr0 = 0
 
   pidum = 1./(pi*2)**1.5*(vwidthe)**3
   do m=1,mme
@@ -3368,7 +3370,10 @@ subroutine pint
         !         Don't start until a global ITG steady state has been reached.
         if (((tcurr-dt)-smtime) > 0.0) then
            !         Get temp and dens at particle loc.
-           smtr = wx0*t0e(i) + wx1*t0e(i+1)
+           i    = int((r-rin)/dr)
+           wx0  = (rin+(i+1)*dr-r)/dr
+           wx1  = 1.-wx0
+           smtr = wx0*t0e(i)  + wx1*t0e(i+1)
            smnr = wx0*xn0e(i) + wx1*xn0e(i+1)
 
            !         Convert values to SI unit for comparison.
@@ -3418,7 +3423,8 @@ subroutine pint
               smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
    
               !          Get flux divergence at particle radial position.
-              smdiff   = -1.0*smgamgmp/(smgradt0(nr/2))
+              nr0      = int((r0a*a - rin)/dr)
+              smdiff   = -1.0*smgamgmp/(smgradt0(nr0))
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
               smflx    = -1.0*smdiff*smg2t0ep
               
@@ -3458,9 +3464,9 @@ subroutine pint
 
 
      if (smbool.eq.1) then
-       smfrac = smfrac - 0.5*dte*smflx*fovg
-       smfracabs = smfracabs - 0.5*dte*abs(smflx)*fovg
-       smfracupd = smfracupd - 0.5*dte*smflx*SIN(2.0*mypi*y2e(m)/ly)*fovg
+       smfrac = smfrac - 0.5*dte*smflx
+       smfracabs = smfracabs - 0.5*dte*abs(smflx)
+       smfracupd = smfracupd - 0.5*dte*smflx*SIN(2.0*pi*y2e(m)/ly)
      end if
      !         if(x3e(m)>lx .or. x3e(m)<0.)w3e(m) = 0. 
 
@@ -3540,7 +3546,7 @@ subroutine pint
   end do
 
   write(*,*) "%sm:", float(smcnt)*100.0/float(mme)
-  write(*,*) "smfrac avg:", smfrac,smcnt,smfrac/float(smcnt),smfracabs/float(smcnt)
+  write(*,*) "smfrac avg:", smfrac,smcnt,smfrac/float(smcnt),smfracabs/float(smcnt),smfracupd/float(smcnt)
 
   call MPI_ALLREDUCE(myopz,nopz,1,MPI_integer, &
        MPI_SUM, MPI_COMM_WORLD,ierr)
@@ -3631,7 +3637,7 @@ subroutine cint(n)
   !Subgrid model.
   real :: smflx,smnr,smtr,smvpar,smmu,smvpargn,smvpargm,smmugm,smmugn,dvparg,dmug,w11,w12,w21,w22,denom, &
      smgamgmp,smg2t0ep,smdiff,gamgm,gamgn
-  integer :: v,w,idv,idw
+  integer :: v,w,idv,idw,nr0
 
   sbuf(1:10) = 0.
   rbuf(1:10) = 0.
@@ -3676,6 +3682,7 @@ subroutine cint(n)
   w = 0
   idv = 0
   idw = 0
+  nr0 = 0
   smvgrdp = 0.0
   smmugrdp = 0.0
 
@@ -3781,6 +3788,9 @@ subroutine cint(n)
        !         Don't start until a global ITG steady state has been reached.
        if (((tcurr-dt)-smtime) > 0.0) then
           !         Get temp and dens at particle loc.
+          i    = int((r-rin)/dr)
+          wx0  = (rin+(i+1)*dr-r)/dr
+          wx1  = 1.-wx0
           smtr = wx0*t0e(i) + wx1*t0e(i+1)
           smnr = wx0*xn0e(i) + wx1*xn0e(i+1)
 
@@ -3831,7 +3841,8 @@ subroutine cint(n)
              smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
  
              !          Get flux divergence at particle radial position.
-             smdiff   = -1.0*smgamgmp/(smgradt0(nr/2))
+             nr0      = int((r0a*a-rin)/dr)
+             smdiff   = -1.0*smgamgmp/(smgradt0(nr0))
              smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
              smflx    = -1.0*smdiff*smg2t0ep
          end if
@@ -4384,9 +4395,9 @@ subroutine jie(ip,n)
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp,grdgtp
   real :: grp,gxdgyp,rhox(4),rhoy(4),vncp,vparspp
   !Subgrid model.
-  real :: smflx,smfrac,smfracabs,smnr,smtr,smvpar,smmu,smvpargn,smvpargm,smmugn,smmugm,dvparg,dmug,w11,w12,w21,w22,denom, &
+  real :: smflx,smnr,smtr,smvpar,smmu,smvpargn,smvpargm,smmugn,smmugm,dvparg,dmug,w11,w12,w21,w22,denom, &
      smgamgmp,smg2t0ep,smdiff,gamgm,gamgn
-  integer :: smcnt,v,w,idv,idw
+  integer :: smcnt,v,w,idv,idw,nr0
 
   nonfi = 1 
   nonfe = 1 
@@ -4396,8 +4407,6 @@ subroutine jie(ip,n)
   drhoidt = 0.
   ns=1
 
-  smfrac = 0.0
-  smfracabs = 0.0
   smcnt = 0
   smflx = 0.0
   smnr = 0.0
@@ -4424,6 +4433,7 @@ subroutine jie(ip,n)
   w = 0
   idv = 0
   idw = 0
+  nr0 = 0
   smmugrdp = 0.0
   smvgrdp = 0.0
 
@@ -4705,6 +4715,9 @@ subroutine jie(ip,n)
         !         Don't start until a global ITG steady state has been reached.
         if (((tcurr-dt)-smtime) > 0.0) then
            !         Get temp and dens at particle loc.
+           i    = int((r-rin)/dr)
+           wx0  = (rin+(i+1)*dr-r)/dr
+           wx1  = 1.-wx0
            smtr = wx0*t0e(i) + wx1*t0e(i+1)
            smnr = wx0*xn0e(i) + wx1*xn0e(i+1)
   
@@ -4755,7 +4768,8 @@ subroutine jie(ip,n)
               smgamgmp = w11*smgamgm(idw,idv) + w12*smgamgm(idw,idv+1) + w21*smgamgm(idw+1,idv) + w22*smgamgm(idw+1,idv+1)
    
               !          Get flux divergence at particle radial position.
-              smdiff   = -1.0*smgamgmp/(smgradt0(nr/2))
+              nr0      = int((r0a*a-rin)/dr)
+              smdiff   = -1.0*smgamgmp/(smgradt0(nr0))
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
               smflx    = -1.0*smdiff*smg2t0ep
            end if
