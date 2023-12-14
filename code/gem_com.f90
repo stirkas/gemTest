@@ -109,6 +109,7 @@ module gem_com
   REAL,DIMENSION(:),allocatable :: x2e,y2e,z2e,u2e,mue2
   REAL,DIMENSION(:),allocatable :: x3e,y3e,z3e,u3e,mue3
   REAL,DIMENSION(:),allocatable :: w2e,w3e
+  REAL,DIMENSION(:),allocatable :: w2egm,w2esm,w3egm,w3esm !Subgrid model
   real,dimension(:),allocatable :: ipass, index
   REAL,DIMENSION(:),allocatable :: w000,w001,w010,w011,w100,w101,w110,w111
 
@@ -177,12 +178,12 @@ module gem_com
   !real :: amod
 
   !Subgrid ETG variables.
-  integer :: smflag,smcbc,nvgene,nwgene,lvgene,lwgene !Subgrid ETG flags and input dimensions. nv and nw for v// and mu grid dims. lv and lw for v-space box sizes.
+  integer :: smflag,smcbc,smtest,nvgene,nwgene,lvgene,lwgene !Subgrid ETG flags and input dimensions. nv and nw for v// and mu grid dims. lv and lw for v-space box sizes.
   character(len=20) :: genein                         !Input file w/ Gamma(vpar,mu) data from GENE.
   real,dimension(:,:),allocatable :: smgamgn,smgamgm    !Subgrid model diffusion coefficient for simple model.
   real,dimension(:),allocatable :: smvgrd,smmugrd     !Subgrid model GENE v-space grids.
   real,dimension(:),allocatable :: smvgrdp,smmugrdp   !Subgrid model v-space grids by particle. For use in smflx calculation with converting gene units to gem units repeatedly.
-  real :: smtime                                      !Start time for sm model additions.
+  real :: smtime,smtestamp                            !Start time for sm model additions and test amplitude factor.
   integer :: smdbg=0
 
   save
@@ -254,6 +255,9 @@ contains
     allocate( ipass(1:mmxe), index(1:mmxe))
     allocate(w000(1:mmxe),w001(1:mmxe),w010(1:mmxe),w011(1:mmxe),&
          w100(1:mmxe),w101(1:mmxe),w110(1:mmxe),w111(1:mmxe))
+
+    allocate(w2egm(1:mmxe),w2esm(1:mmxe),w3egm(1:mmxe),w3esm(1:mmxe)) !Subgrid model
+    w2egm = 0.0; w2esm = 0.0; w3egm = 0.0; w3esm = 0.0
 
     !              Various diagnostic arrays and scalars
     !    plotting constants
