@@ -185,6 +185,7 @@ module gem_com
   real,dimension(:),allocatable :: smvgrdp,smmugrdp   !Subgrid model v-space grids by particle. For use in smflx calculation with converting gene units to gem units repeatedly.
   real :: smtime,smtestamp                            !Start time for sm model additions and test amplitude factor.
   integer :: smdbg=0
+  real,dimension(:),allocatable :: denesm, dtesm
 
   save
 
@@ -301,6 +302,7 @@ contains
     allocate(smgamgn(nwgene,nvgene),smgamgm(nwgene,nvgene)) !GENE file has columns for mu and rows for vpar.
     allocate(smvgrd(nvgene),smmugrd(nwgene))
     allocate(smvgrdp(nvgene),smmugrdp(nwgene))
+    allocate(denesm(0:imx),dtesm(0:imx))
 
   end subroutine new_gem_com
 

@@ -441,7 +441,7 @@ subroutine init
      end do
   end do
 
-  smdbg = 1
+  smdbg = 0
   do while (smdbg == 1)
      call sleep(1)
   end do
@@ -1216,6 +1216,8 @@ subroutine grid1(ip,n)
   real :: mydti(0:imx,0:jmx,0:1),mydte(0:imx,0:jmx,0:1)
   real :: dbdrp,dbdtp,grcgtp,bfldp,fp,radiusp,dydrp,qhatp,psipp,jfnp
   real :: grp,gxdgyp,rhox(4),rhoy(4)
+  !Subgrid model.
+  real :: wghtsm,mydenesm(0:imx,0:jmx,0:1),mydtesm(0:imx,0:jmx,0:1),denesmz(0:imx,0:jmx,0:1),dtesmz(0:imx,0:jmx,0:1)
 
   rho=0.
   jion = 0.
@@ -1351,12 +1353,32 @@ subroutine grid1(ip,n)
   upar(:,:,:) = 0.
   mydene = 0.
   myupar = 0.
+  mydenesm = 0.
+  mydtesm = 0.
   if(idg.eq.1)write(*,*)'enter electron grid1'
   do m=1,mme
      dv=(dx*dy*dz)
      wght=w3e(m)/dv
+     wghtsm = w3esm(m)/dv
      vpar = u3e(m) !linearly correct
      !         if(abs(vpar/vte).gt.vcut)wght = 0.
+     
+     k = int(z3(ns,m)/delz)
+     wz0 = ((k+1)*delz-z3(ns,m))/delz
+     wz1 = 1-wz0
+     th = wz0*thfnz(k)+wz1*thfnz(k+1)
+     i = int((r-rin)/dr)
+     wx0 = (rin+(i+1)*dr-r)/dr
+     wx1 = 1.-wx0
+     k = int((th+pi)/dth)
+     wz0 = (-pi+(k+1)*dth-th)/dth
+     wz1 = 1.-wz0
+     bfldp = wx0*wz0*bfld(i,k)+wx0*wz1*bfld(i,k+1) &
+     +wx1*wz0*bfld(i+1,k)+wx1*wz1*bfld(i+1,k+1) 
+     b=1.-tor+tor*bfldp
+
+     vfac = 0.5*(emass*u3e(m)**2 + 2.0*mue3(m)*b)
+     vfac = 0.5*(u3e(m)**2 + 2.0*mue3(m)*b)
 
      xt=x3e(m)
      yt=y3e(m)
@@ -1390,11 +1412,32 @@ subroutine grid1(ip,n)
      myupar(i,j+1,k+1)  =myupar(i,j+1,k+1)+wght*vpar*w011(m)
      myupar(i+1,j+1,k+1)=myupar(i+1,j+1,k+1)+wght*vpar*w111(m)
 
+     mydenesm(i,j,k)       = mydenesm(i,j,k)+wghtsm*w000(m)
+     mydenesm(i+1,j,k)     = mydenesm(i+1,j,k)+wghtsm*w100(m)
+     mydenesm(i,j+1,k)     = mydenesm(i,j+1,k)+wghtsm*w010(m)
+     mydenesm(i+1,j+1,k)   = mydenesm(i+1,j+1,k)+wghtsm*w110(m)
+     mydenesm(i,j,k+1)     = mydenesm(i,j,k+1)+wghtsm*w001(m)
+     mydenesm(i+1,j,k+1)   = mydenesm(i+1,j,k+1)+wghtsm*w101(m)
+     mydenesm(i,j+1,k+1)   = mydenesm(i,j+1,k+1)+wghtsm*w011(m)
+     mydenesm(i+1,j+1,k+1) = mydenesm(i+1,j+1,k+1)+wghtsm*w111(m)
+
+     dum = 2./3.*vfac
+     mydtesm(i,j,k)       = mydtesm(i,j,k)+wghtsm*dum*w000(m)
+     mydtesm(i+1,j,k)     = mydtesm(i+1,j,k)+wghtsm*dum*w100(m)
+     mydtesm(i,j+1,k)     = mydtesm(i,j+1,k)+wghtsm*dum*w010(m)
+     mydtesm(i+1,j+1,k)   = mydtesm(i+1,j+1,k)+wghtsm*dum*w110(m)
+     mydtesm(i,j,k+1)     = mydtesm(i,j,k+1)+wghtsm*dum*w001(m)
+     mydtesm(i+1,j,k+1)   = mydtesm(i+1,j,k+1)+wghtsm*dum*w101(m)
+     mydtesm(i,j+1,k+1)   = mydtesm(i,j+1,k+1)+wghtsm*dum*w011(m)
+     mydtesm(i+1,j+1,k+1) = mydtesm(i+1,j+1,k+1)+wghtsm*dum*w111(m)
+
   enddo
   if(idg.eq.1)write(*,*)'pass electron grid1'
   !   enforce periodicity
   call enforce(mydene(:,:,:))
   call enforce(myupar(:,:,:))
+  call enforce(mydenesm(:,:,:))
+  call enforce(mydtesm(:,:,:))
   !      call filter(mydene(:,:,:))
   !      call filter(myupar(:,:,:))
 
@@ -1403,6 +1446,9 @@ subroutine grid1(ip,n)
         do  k=0,mykm
            dene(i,j,k)= mydene(i,j,k)/n0e/jac(i,k)*cn0e*ifluid
            upar(i,j,k) = myupar(i,j,k)/n0e/jac(i,k)*cn0e*ifluid
+
+           mydenesm(i,j,k) = mydenesm(i,j,k)/n0e/jac(i,k)*cn0e*ifluid
+           mydtesm(i,j,k) = mydtesm(i,j,k)/n0e/jac(i,k)*cn0e*ifluid
         end do
      end do
   end do
@@ -1416,6 +1462,21 @@ subroutine grid1(ip,n)
        upart(0:im,0:jm,0:1),             &
        (imx+1)*(jmx+1)*2,MPI_REAL8,       &
        MPI_SUM,GRID_COMM,ierr)
+
+  call MPI_ALLREDUCE(mydenesm(0:im,0:jm,0:1),  &
+       denesmz(0:im,0:jm,0:1),             &
+       (imx+1)*(jmx+1)*2,MPI_REAL8,       &
+       MPI_SUM,GRID_COMM,ierr)
+  call MPI_ALLREDUCE(mydtesm(0:im,0:jm,0:1),  &
+       dtesmz(0:im,0:jm,0:1),             &
+       (imx+1)*(jmx+1)*2,MPI_REAL8,       &
+       MPI_SUM,GRID_COMM,ierr)
+
+  call zon(denesmz,denesm)
+  call zon(dtesmz,dtesm)
+  do i = 0,im
+    dtesm(i) = (dtesm(i) - gt0e(i)*denesm(i))/gn0e(i)
+  end do
 
   do i = 0,im
      do j = 0,jm
@@ -2100,6 +2161,7 @@ subroutine spec(n)
      open(9, file='plot', status='unknown',position='append')
      open(11, file='flux', status='unknown',position='append')
      open(17, file='yyre', status='unknown',position='append')
+     open(35, file='zprof', status='unknown',position='append')
 
      write(*,10)i,rmsphi(n),rmsapa(n),pf,efe,pfi,efi,avewi(1,n),&
           avewe(n),yyre(1,0),yyim(1,0),yyamp(1,0)
@@ -2117,10 +2179,14 @@ subroutine spec(n)
           efc/eflxgb,pf_em/pflxgb,pfi_em/pflxgb,pfc_em/pflxgb,efe_em/eflxgb,&
           efi_em/eflxgb,efc_em/eflxgb
 
+     write(35,17)tdum,(denesm(i),i=0,imx-1)
+     write(35,17)tdum,(dtesm(i),i=0,imx-1)
+
      write(17,12)i,yyre(1,0),yyre(1,1)!,yyre(1,2),yyre(1,3),yyre(1,4)
      close(9)
      close(11)
      close(17)
+     close(35)
   end if
 
   return
@@ -3431,6 +3497,7 @@ subroutine pint
      vxdum = (eyp/b+vpdum/b*delbxp)*dum2
 
      smwfac = 0.5*dte*smflx*xnp
+     !smwfac = (r-rin)/(rout-rin) !SIN(5*2*pi*(r-rin)/(rout-rin))
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
      elseif (smtest.eq.2) then
@@ -3864,6 +3931,7 @@ subroutine cint(n)
      !             -(2*u3e(m)*aparp+qel/emass*aparp*aparp)/(b*b)/br0*sint
 
      smwfac = dte*smflx*xnp
+     !smwfac = (r-rin)/(rout-rin) !SIN(2*pi*(r-rin)/(rout-rin))
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
      elseif (smtest.eq.2) then
