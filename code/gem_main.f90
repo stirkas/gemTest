@@ -464,11 +464,10 @@ subroutine init
       prwid = 0.3 !profile width.
       do i=0,nr
          r = (rin+i*dr)
-         smf0e(i)     = xn0e(i)*(emass/(2*pi*t0e(i)))**(1.5)
-         smgradn0(i)  = (a/rmaj0)*nmax/COSH((r-r0)/(prwid*a))**2
-         smgradt0(i)  = (a/rmaj0)*tmax/COSH((r-r0)/(prwid*a))**2
-         smgrad2n0(i) = -(a/rmaj0)**2*(nmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(nmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
-         smgrad2t0(i) = -(a/rmaj0)**2*(tmax**2/COSH((r-r0)/(prwid*a))**2 + 2*(tmax/prwid)*(Rovera)*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
+         smgradn0(i)  = (nmax/rmaj0)/COSH((r-r0)/(prwid*a))**2
+         smgradt0(i)  = (tmax/rmaj0)/COSH((r-r0)/(prwid*a))**2
+         smgrad2n0(i) = -((nmax/rmaj0)**2/COSH((r-r0)/(prwid*a))**2 + 2*(nmax/prwid)*(1.0/(a*rmaj0))*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
+         smgrad2t0(i) = -((tmax/rmaj0)**2/COSH((r-r0)/(prwid*a))**2 + 2*(tmax/prwid)*(1.0/(a*rmaj0))*TANH((r-r0)/(prwid*a)))*(1/COSH((r-r0)/(prwid*a)))**2
       end do
    end if
 
@@ -3432,7 +3431,8 @@ subroutine pint
            end do
            !         Finally need conversion factor for flux in GENE vs GEM.
            !         Seems GENE and GEM both use r0 data for gB units for fluxes. cref, nref, Tref, rho* are not to be radially dependent as far as I can tell.
-           gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
+           gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 &
+                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0/2.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
            gamgm = 4.66e19/(2140.0*1.60217663e-19/(2.0*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
            do w = 1,nwgene
               do v = 1,nvgene
@@ -3464,9 +3464,8 @@ subroutine pint
    
               !          Get flux divergence at particle radial position.
               nr0      = int((r0a*a - rin)/dr)
-              smdiff   = smgamgmp/(smgradt0(nr0))
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
-              smflx    = smdiff*smg2t0ep
+              smflx    = smgamgmp*smg2t0ep/smgradt0(nr0)
 
               smbool = 1
               smcnt = smcnt + 1
@@ -3496,7 +3495,7 @@ subroutine pint
      if(eldu.eq.1)dum = (tge/ter)**1.5*exp(vfac*(1/tge-1./ter))
      vxdum = (eyp/b+vpdum/b*delbxp)*dum2
 
-     smwfac = 0.5*dte*smflx*xnp
+     smwfac = 0.5*dte*smflx*xnp !TODO: SM How to divide by f0? Just need to calculate fdum manually.
      !smwfac = (r-rin)/(rout-rin) !SIN(5*2*pi*(r-rin)/(rout-rin))
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
@@ -3867,7 +3866,8 @@ subroutine cint(n)
            end do
            !         Finally need conversion factor for flux in GENE vs GEM.
            !         Seems GENE and GEM both use r0 data for gB units for fluxes. cref, nref, Tref, rho* are not to be radially dependent as far as I can tell.
-           gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
+           gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 & 
+                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0/2.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
            gamgm = 4.66e19/(2140.0*1.60217663e-19/(2.0*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
            do w = 1,nwgene
               do v = 1,nvgene
@@ -3899,9 +3899,8 @@ subroutine cint(n)
   
               !          Get flux divergence at particle radial position.
               nr0 = int((r0a*a - rin)/dr)
-              smdiff   = smgamgmp/(smgradt0(nr0))
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
-              smflx    = smdiff*smg2t0ep
+              smflx    = smgamgmp*smg2t0ep/smgradt0(nr0)
           end if
   
         end if
@@ -4805,7 +4804,8 @@ subroutine jie(ip,n)
            end do
            !         Finally need conversion factor for flux in GENE vs GEM. Does this also need radial dependence, maybe just rhostar???
            !         Seems GENE and GEM both use r0 data for gB units for fluxes. cref, nref, Tref, rho* are not to be radially dependent as far as I can tell.
-           gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
+           gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 &
+                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0/2.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
            gamgm = 4.66e19/(2140.0*1.60217663e-19/(2.0*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
            do w = 1,nwgene
               do v = 1,nvgene
@@ -4837,9 +4837,8 @@ subroutine jie(ip,n)
    
               !          Get flux divergence at particle radial position.
               nr0 = int((r0a*a-rin)/dr)
-              smdiff   = smgamgmp/(smgradt0(nr0))
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
-              smflx    = smdiff*smg2t0ep
+              smflx    = smgamgmp*smg2t0ep/smgradt0(nr0)
            end if
   
         end if
