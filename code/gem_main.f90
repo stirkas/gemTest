@@ -1217,6 +1217,7 @@ subroutine grid1(ip,n)
   real :: grp,gxdgyp,rhox(4),rhoy(4)
   !Subgrid model.
   real :: wghtsm,mydenesm(0:imx,0:jmx,0:1),mydtesm(0:imx,0:jmx,0:1),denesmz(0:imx,0:jmx,0:1),dtesmz(0:imx,0:jmx,0:1)
+  real :: mydEesm(0:imx,0:jmx,0:1),dEesmz(0:imx,0:jmx,0:1)
 
   rho=0.
   jion = 0.
@@ -1354,6 +1355,14 @@ subroutine grid1(ip,n)
   myupar = 0.
   mydenesm = 0.
   mydtesm = 0.
+  mydEesm = 0.
+  denesm = 0.
+  dtesm = 0.
+  dEesm = 0.
+  denesmz = 0.
+  dtesmz = 0.
+  dEesmz = 0.
+
   if(idg.eq.1)write(*,*)'enter electron grid1'
   do m=1,mme
      dv=(dx*dy*dz)
@@ -1377,7 +1386,6 @@ subroutine grid1(ip,n)
      b=1.-tor+tor*bfldp
 
      vfac = 0.5*(emass*u3e(m)**2 + 2.0*mue3(m)*b)
-     vfac = 0.5*(u3e(m)**2 + 2.0*mue3(m)*b)
 
      xt=x3e(m)
      yt=y3e(m)
@@ -1430,6 +1438,16 @@ subroutine grid1(ip,n)
      mydtesm(i,j+1,k+1)   = mydtesm(i,j+1,k+1)+wghtsm*dum*w011(m)
      mydtesm(i+1,j+1,k+1) = mydtesm(i+1,j+1,k+1)+wghtsm*dum*w111(m)
 
+     dum = vfac
+     mydEesm(i,j,k)       = mydEesm(i,j,k)+wghtsm*dum*w000(m)
+     mydEesm(i+1,j,k)     = mydEesm(i+1,j,k)+wghtsm*dum*w100(m)
+     mydEesm(i,j+1,k)     = mydEesm(i,j+1,k)+wghtsm*dum*w010(m)
+     mydEesm(i+1,j+1,k)   = mydEesm(i+1,j+1,k)+wghtsm*dum*w110(m)
+     mydEesm(i,j,k+1)     = mydEesm(i,j,k+1)+wghtsm*dum*w001(m)
+     mydEesm(i+1,j,k+1)   = mydEesm(i+1,j,k+1)+wghtsm*dum*w101(m)
+     mydEesm(i,j+1,k+1)   = mydEesm(i,j+1,k+1)+wghtsm*dum*w011(m)
+     mydEesm(i+1,j+1,k+1) = mydEesm(i+1,j+1,k+1)+wghtsm*dum*w111(m)
+
   enddo
   if(idg.eq.1)write(*,*)'pass electron grid1'
   !   enforce periodicity
@@ -1437,6 +1455,7 @@ subroutine grid1(ip,n)
   call enforce(myupar(:,:,:))
   call enforce(mydenesm(:,:,:))
   call enforce(mydtesm(:,:,:))
+  call enforce(mydEesm(:,:,:))
   !      call filter(mydene(:,:,:))
   !      call filter(myupar(:,:,:))
 
@@ -1448,6 +1467,7 @@ subroutine grid1(ip,n)
 
            mydenesm(i,j,k) = mydenesm(i,j,k)/n0e/jac(i,k)*cn0e*ifluid
            mydtesm(i,j,k) = mydtesm(i,j,k)/n0e/jac(i,k)*cn0e*ifluid
+           mydEesm(i,j,k) = mydEesm(i,j,k)/n0e/jac(i,k)*cn0e*ifluid
         end do
      end do
   end do
@@ -1470,9 +1490,14 @@ subroutine grid1(ip,n)
        dtesmz(0:im,0:jm,0:1),             &
        (imx+1)*(jmx+1)*2,MPI_REAL8,       &
        MPI_SUM,GRID_COMM,ierr)
+  call MPI_ALLREDUCE(mydEesm(0:im,0:jm,0:1),  &
+       dEesmz(0:im,0:jm,0:1),             &
+       (imx+1)*(jmx+1)*2,MPI_REAL8,       &
+       MPI_SUM,GRID_COMM,ierr)
 
   call zon(denesmz,denesm)
   call zon(dtesmz,dtesm)
+  call zon(dEesmz,dEesm)
   do i = 0,im
     dtesm(i) = (dtesm(i) - gt0e(i)*denesm(i))/gn0e(i)
   end do
@@ -2180,6 +2205,7 @@ subroutine spec(n)
 
      write(35,17)tdum,(denesm(i),i=0,imx-1)
      write(35,17)tdum,(dtesm(i),i=0,imx-1)
+     write(35,17)tdum,(dEesm(i),i=0,imx-1)
 
      write(17,12)i,yyre(1,0),yyre(1,1)!,yyre(1,2),yyre(1,3),yyre(1,4)
      close(9)
@@ -3291,7 +3317,7 @@ subroutine pint
   real :: x000,x001,x010,x011,x100,x101,x110,x111
   !Subgrid model
   real :: smflx,smwfac,smnr,smtr,smvpar,smmu,smvpargn,smmugn,smvpargm,smmugm,gamgn,gamgm
-  real :: dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp,smg2t0ep,smdiff
+  real :: dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp,smg2t0ep,smdiff,fdum
   integer :: v,w,idv,idw,nr0
   real :: smfrac,smfracabs,smfracupd
   integer :: smcnt,smbool
@@ -3302,7 +3328,7 @@ subroutine pint
   myaven = 0.
 
   smflx = 0.0; smwfac = 0.0; smnr = 0.0; smtr = 0.0; smvpar = 0.0; smmu = 0.0; smvpargn = 0.0; smmugn = 0.0; smvpargm = 0.0; smmugm = 0.0; gamgn = 0.0; gamgm = 0.0
-  dvparg = 0.0; dmug = 0.0; w11 = 0.0; w12 = 0.0; w21 = 0.0; w22 = 0.0; denom = 0.0; smgamgmp = 0.0; smg2t0ep = 0.0; smdiff = 0.0
+  dvparg = 0.0; dmug = 0.0; w11 = 0.0; w12 = 0.0; w21 = 0.0; w22 = 0.0; denom = 0.0; smgamgmp = 0.0; smg2t0ep = 0.0; smdiff = 0.0; fdum = 0.0
   v = 0; w = 0; idv = 0; idw = 0; nr0 = 0
   smfrac = 0.0; smfracabs = 0.0; smfracupd = 0.0
   smcnt = 0; smbool = 0
@@ -3432,8 +3458,8 @@ subroutine pint
            !         Finally need conversion factor for flux in GENE vs GEM.
            !         Seems GENE and GEM both use r0 data for gB units for fluxes. cref, nref, Tref, rho* are not to be radially dependent as far as I can tell.
            gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 &
-                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0/2.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
-           gamgm = 4.66e19/(2140.0*1.60217663e-19/(2.0*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
+                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
+           gamgm = 4.66e19/(2140.0*1.60217663e-19/(1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
            do w = 1,nwgene
               do v = 1,nvgene
                  smgamgm(w,v)  = smgamgn(w,v)*gamgn/gamgm
@@ -3465,7 +3491,7 @@ subroutine pint
               !          Get flux divergence at particle radial position.
               nr0      = int((r0a*a - rin)/dr)
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
-              smflx    = smgamgmp*smg2t0ep/smgradt0(nr0)
+              smflx    = smgamgmp*smg2t0ep/smgradt0(nr2)
 
               smbool = 1
               smcnt = smcnt + 1
@@ -3495,7 +3521,9 @@ subroutine pint
      if(eldu.eq.1)dum = (tge/ter)**1.5*exp(vfac*(1/tge-1./ter))
      vxdum = (eyp/b+vpdum/b*delbxp)*dum2
 
-     smwfac = 0.5*dte*smflx*xnp !TODO: SM How to divide by f0? Just need to calculate fdum manually.
+     fdum = xnp/(2*pi*ter)**1.5*exp(-vfac/ter)*emass**1.5
+
+     smwfac = 0.5*dte*smflx*xnp/fdum
      !smwfac = (r-rin)/(rout-rin) !SIN(5*2*pi*(r-rin)/(rout-rin))
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
@@ -3717,7 +3745,7 @@ subroutine cint(n)
   real :: x000,x001,x010,x011,x100,x101,x110,x111
   !Subgrid model
   real :: smflx,smwfac,smnr,smtr,smvpar,smmu,smvpargn,smmugn,smvpargm,smmugm,gamgn,gamgm
-  real :: dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp,smg2t0ep,smdiff
+  real :: dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp,smg2t0ep,smdiff,fdum
   integer :: v,w,idv,idw,nr0
 
   sbuf(1:10) = 0.
@@ -3739,7 +3767,7 @@ subroutine cint(n)
   mynowe = 0
 
   smflx = 0.0; smwfac = 0.0; smnr = 0.0; smtr = 0.0; smvpar = 0.0; smmu = 0.0; smvpargn = 0.0; smmugn = 0.0; smvpargm = 0.0; smmugm = 0.0; gamgn = 0.0; gamgm = 0.0
-  dvparg = 0.0; dmug = 0.0; w11 = 0.0; w12 = 0.0; w21 = 0.0; w22 = 0.0; denom = 0.0; smgamgmp = 0.0; smg2t0ep = 0.0; smdiff = 0.0
+  dvparg = 0.0; dmug = 0.0; w11 = 0.0; w12 = 0.0; w21 = 0.0; w22 = 0.0; denom = 0.0; smgamgmp = 0.0; smg2t0ep = 0.0; smdiff = 0.0; fdum = 0.0
   v = 0; w = 0; idv = 0; idw = 0; nr0 = 0
 
   pidum = 1./(pi*2)**1.5*(vwidthe)**3
@@ -3867,8 +3895,8 @@ subroutine cint(n)
            !         Finally need conversion factor for flux in GENE vs GEM.
            !         Seems GENE and GEM both use r0 data for gB units for fluxes. cref, nref, Tref, rho* are not to be radially dependent as far as I can tell.
            gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 & 
-                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0/2.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
-           gamgm = 4.66e19/(2140.0*1.60217663e-19/(2.0*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
+                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
+           gamgm = 4.66e19/(2140.0*1.60217663e-19/1.67262192e-27) !nref/cref^2 = nref/(Tref/mref)
            do w = 1,nwgene
               do v = 1,nvgene
                  smgamgm(w,v)  = smgamgn(w,v)*gamgn/gamgm
@@ -3900,7 +3928,7 @@ subroutine cint(n)
               !          Get flux divergence at particle radial position.
               nr0 = int((r0a*a - rin)/dr)
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
-              smflx    = smgamgmp*smg2t0ep/smgradt0(nr0)
+              smflx    = smgamgmp*smg2t0ep/smgradt0(nr2)
           end if
   
         end if
@@ -3929,7 +3957,9 @@ subroutine cint(n)
      vxdum = (eyp/b+vpdum/b*delbxp)*dum2
      !             -(2*u3e(m)*aparp+qel/emass*aparp*aparp)/(b*b)/br0*sint
 
-     smwfac = dte*smflx*xnp
+     fdum = xnp/(2*pi*ter)**1.5*exp(-vfac/ter)*emass**1.5
+
+     smwfac = dte*smflx*xnp/fdum
      !smwfac = (r-rin)/(rout-rin) !SIN(2*pi*(r-rin)/(rout-rin))
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
@@ -4489,7 +4519,7 @@ subroutine jie(ip,n)
   real :: grp,gxdgyp,rhox(4),rhoy(4),vncp,vparspp
   !Subgrid model
   real :: smflx,smwfac,smnr,smtr,smvpar,smmu,smvpargn,smmugn,smvpargm,smmugm,gamgn,gamgm
-  real :: dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp,smg2t0ep,smdiff
+  real :: dvparg,dmug,w11,w12,w21,w22,denom,smgamgmp,smg2t0ep,smdiff,fdum
   integer :: v,w,idv,idw,nr0
 
   nonfi = 1 
@@ -4501,7 +4531,7 @@ subroutine jie(ip,n)
   ns=1
 
   smflx = 0.0; smwfac = 0.0; smnr = 0.0; smtr = 0.0; smvpar = 0.0; smmu = 0.0; smvpargn = 0.0; smmugn = 0.0; smvpargm = 0.0; smmugm = 0.0; gamgn = 0.0; gamgm = 0.0
-  dvparg = 0.0; dmug = 0.0; w11 = 0.0; w12 = 0.0; w21 = 0.0; w22 = 0.0; denom = 0.0; smgamgmp = 0.0; smg2t0ep = 0.0; smdiff = 0.0
+  dvparg = 0.0; dmug = 0.0; w11 = 0.0; w12 = 0.0; w21 = 0.0; w22 = 0.0; denom = 0.0; smgamgmp = 0.0; smg2t0ep = 0.0; smdiff = 0.0; fdum = 0.0
   v = 0; w = 0; idv = 0; idw = 0; nr0 = 0
 
   pidum = 1./(pi*2)**1.5*(vwidth)**3
@@ -4765,6 +4795,7 @@ subroutine jie(ip,n)
      vp0 = 1./b**2*lr0/q0*qhatp*fp/radiusp*grcgtp
      vp0 = vp0*vncp*vexbsw
      kap = kapnp - (1.5-vfac/ter)*kaptp
+     fdum = xnp/(2*pi*ter)**1.5*exp(-vfac/ter)*emass**1.5
 
      wght=w3e(m)/dv
      wght0=exp(-vfac)/dv
@@ -4805,8 +4836,8 @@ subroutine jie(ip,n)
            !         Finally need conversion factor for flux in GENE vs GEM. Does this also need radial dependence, maybe just rhostar???
            !         Seems GENE and GEM both use r0 data for gB units for fluxes. cref, nref, Tref, rho* are not to be radially dependent as far as I can tell.
            gamgn = 4.66e19/(2140.0*1.60217663e-19/(1.99*1.67262192e-27))*(1.9928931e-03)**2 &
-                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**(3.0/2.0) !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
-           gamgm = 4.66e19/(2140.0*1.60217663e-19/(2.0*1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
+                   *smnr*sqrt(0.27244e-3/(2.0*smtr))**3 !(nref/cref^2)*(rho*)^2 = (nref/(Tref/mref))*(rho*)^2
+           gamgm = 4.66e19/(2140.0*1.60217663e-19/(1.67262192e-27)) !nref/cref^2 = nref/(Tref/mref)
            do w = 1,nwgene
               do v = 1,nvgene
                  smgamgm(w,v)  = smgamgn(w,v)*gamgn/gamgm
@@ -4838,7 +4869,7 @@ subroutine jie(ip,n)
               !          Get flux divergence at particle radial position.
               nr0 = int((r0a*a-rin)/dr)
               smg2t0ep = wx0*smgrad2t0(i) + wx1*smgrad2t0(i+1)
-              smflx    = smgamgmp*smg2t0ep/smgradt0(nr0)
+              smflx    = smgamgmp*smg2t0ep/smgradt0(nr2)
            end if
   
         end if
@@ -4951,7 +4982,7 @@ subroutine jie(ip,n)
      myupazd(i,j+1,k+1)  =myupazd(i,j+1,k+1)+wght2*w011(m)
      myupazd(i+1,j+1,k+1)=myupazd(i+1,j+1,k+1)+wght2*w111(m)
 
-     smwfac = wght0*smflx*xnp
+     smwfac = wght0*smflx*xnp/fdum
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
      elseif (smtest.eq.2) then
