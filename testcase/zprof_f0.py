@@ -31,6 +31,7 @@ def plot_at_timestamp(var1_values, var2_values, var3_values, timestamp_index):
     xarr = np.linspace(0.2,0.8,128)
     intFac = float(int(timestamp_index) - 4)
     if intFac <= 0: intFac = 1
+    intFac = intFac*1e-8
     vals1 = values_var1[timestamp_index]
     vals2 = values_var2[timestamp_index]
     vals3 = values_var3[timestamp_index]

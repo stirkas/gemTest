@@ -160,8 +160,8 @@ width=1.e7    !
 smflag=1         !Subgrid ETG model flag. 0 is off, 1 is on.
 smcbc=1          !Run CBC case. Radial profiles calculated analytically. Else need to setup correctly in GEM.
 smtime=100.0     !start time for new input.
-smtest=0         !smtest flag. 0=regular, 1=1e-5*reg, 2=sin*reg, 3=1e-5*sin*reg. 4=1e-5*sin
-smtestamp=1.0e-5 !Vary amplitude for extra test factor.
+smtest=1         !smtest flag. 0=regular, 1=1e-5*reg, 2=sin*reg, 3=1e-5*sin*reg. 4=1e-5*sin
+smtestamp=1.0e-8 !Vary amplitude for extra test factor.
 genein='gene.in' !gene input file with Gamma(z,vpar,mu) from flux-tube GENE.
 nvgene=32        !vpar grid resolution in gene - nv0 var.
 nwgene=8         !mu grid resolution in gene - nw0 var.

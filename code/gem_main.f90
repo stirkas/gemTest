@@ -3524,6 +3524,7 @@ subroutine pint
      fdum = xnp/(2*pi*ter)**1.5*exp(-vfac/ter)*emass**1.5
 
      smwfac = 0.5*dte*smflx*xnp/fdum
+     smwfac = 0.5*dte*1.0*xnp
      !smwfac = (r-rin)/(rout-rin) !SIN(5*2*pi*(r-rin)/(rout-rin))
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
@@ -3960,6 +3961,7 @@ subroutine cint(n)
      fdum = xnp/(2*pi*ter)**1.5*exp(-vfac/ter)*emass**1.5
 
      smwfac = dte*smflx*xnp/fdum
+     smwfac = dte*1.0*xnp
      !smwfac = (r-rin)/(rout-rin) !SIN(2*pi*(r-rin)/(rout-rin))
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
@@ -4983,6 +4985,7 @@ subroutine jie(ip,n)
      myupazd(i+1,j+1,k+1)=myupazd(i+1,j+1,k+1)+wght2*w111(m)
 
      smwfac = wght0*smflx*xnp/fdum
+     smwfac = wght0*1.0*xnp
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
      elseif (smtest.eq.2) then
