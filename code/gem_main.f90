@@ -1499,7 +1499,8 @@ subroutine grid1(ip,n)
   call zon(dtesmz,dtesm)
   call zon(dEesmz,dEesm)
   do i = 0,im
-    dtesm(i) = (dtesm(i) - gt0e(i)*denesm(i))/gn0e(i)
+    !dtesm(i) = (dtesm(i) - gt0e(i)*denesm(i))/gn0e(i)
+   dtesm(i) = dtesm(i)/gn0e(i)
   end do
 
   do i = 0,im
@@ -2206,6 +2207,8 @@ subroutine spec(n)
      write(35,17)tdum,(denesm(i),i=0,imx-1)
      write(35,17)tdum,(dtesm(i),i=0,imx-1)
      write(35,17)tdum,(dEesm(i),i=0,imx-1)
+     write(35,17)tdum,(xn0e(i)*cn0e,i=0,nr-1)
+     write(35,17)tdum,(t0e(i),i=0,nr-1)
 
      write(17,12)i,yyre(1,0),yyre(1,1)!,yyre(1,2),yyre(1,3),yyre(1,4)
      close(9)
@@ -3538,13 +3541,13 @@ subroutine pint
 
      w3e(m)=w2e(m) + 0.5*dte*(  &
           (vxdum*kap + edot/ter-dum1*ppar*aparp/ter)*xnp     &
-          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum &
-          - smwfac
+          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum !&
+          !- smwfac
 
      w3egm(m) = w2egm(m) + 0.5*dte*(  &
           (vxdum*kap + edot/ter-dum1*ppar*aparp/ter)*xnp     &
           +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum
-     w3esm(m) = w2esm(m) - smwfac
+     w3esm(m) = w2esm(m) + smwfac
 
 
      if (smbool.eq.1) then
@@ -3976,13 +3979,13 @@ subroutine cint(n)
      w3old = w3e(m)
      w3e(m)=w2e(m) + dte*(  &
           (vxdum*kap + edot/ter  -dum1*ppar*aparp/ter)*xnp    & 
-          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum &
-          - smwfac
+          +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum !&
+          !- smwfac
 
       w3egm(m) = w2egm(m) + dte*(  &
           (vxdum*kap + edot/ter  -dum1*ppar*aparp/ter)*xnp    & 
           +isg*(-dgdtp-zdot*dpdzp+xdot*exp1+ydot*eyp)/ter*xnp)*dum 
-      w3esm(m) = w2esm(m) - smwfac
+      w3esm(m) = w2esm(m) + smwfac
 
 
      if(abs(w3e(m)).gt.4.0.and.nonline==1)then
@@ -4985,7 +4988,7 @@ subroutine jie(ip,n)
      myupazd(i+1,j+1,k+1)=myupazd(i+1,j+1,k+1)+wght2*w111(m)
 
      smwfac = wght0*smflx*xnp/fdum
-     smwfac = wght0*1.0*xnp
+     !smwfac = wght0*1.0*xnp
      if     (smtest.eq.1) then
        smwfac = smwfac*smtestamp
      elseif (smtest.eq.2) then
@@ -4998,7 +5001,7 @@ subroutine jie(ip,n)
 
      dum2 = 1./b*lr0/q0*qhatp*fp/radiusp*grcgtp
      vxdum = (eyp/b+vpar/b*delbxp)*dum2 
-     wght0 = wght0*(vxdum*kap-xdot*exp1/ter-(ydot-vp0)*eyp/ter)*xnp - smwfac
+     wght0 = wght0*(vxdum*kap-xdot*exp1/ter-(ydot-vp0)*eyp/ter)*xnp! - smwfac
 
      mydnedt(i,j,k)      =mydnedt(i,j,k)+wght0*w000(m)
      mydnedt(i+1,j,k)    =mydnedt(i+1,j,k)+wght0*w100(m)

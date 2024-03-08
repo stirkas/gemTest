@@ -83,7 +83,7 @@ onemd=1       !defines whether to use one mode or multimode runs.
               !for linear runs, onemd=1 to pick single mode.
 izonal=1      !0: remove the zonal component from \phi and d\phi/dt
               !1: retain the zonal component in \phi and d\phi/dt
-adiabatic_electron=1    !adiabatic electron options. 0: non; 1: adiabatic
+adiabatic_electron=0    !adiabatic electron options. 0: non; 1: adiabatic
 ineq0=1       !
 iflut=1       !1 always to keep the magnetic flutter component v_||delB/B in x and y component of velocity/drift 
 nzcrt=4       !the kx components to be removed from n=0 component. All i<nzcrt components are removed
@@ -161,7 +161,7 @@ smflag=1         !Subgrid ETG model flag. 0 is off, 1 is on.
 smcbc=1          !Run CBC case. Radial profiles calculated analytically. Else need to setup correctly in GEM.
 smtime=100.0     !start time for new input.
 smtest=1         !smtest flag. 0=regular, 1=1e-5*reg, 2=sin*reg, 3=1e-5*sin*reg. 4=1e-5*sin
-smtestamp=1.0e-8 !Vary amplitude for extra test factor.
+smtestamp=1.0e-9 !Vary amplitude for extra test factor.
 genein='gene.in' !gene input file with Gamma(z,vpar,mu) from flux-tube GENE.
 nvgene=32        !vpar grid resolution in gene - nv0 var.
 nwgene=8         !mu grid resolution in gene - nw0 var.

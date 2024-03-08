@@ -303,6 +303,7 @@ contains
     allocate(smvgrd(nvgene),smmugrd(nwgene))
     allocate(smvgrdp(nvgene),smmugrdp(nwgene))
     allocate(denesm(0:imx),dtesm(0:imx),dEesm(0:imx))
+    denesm = 0.; dtesm = 0.; dEesm = 0.
 
   end subroutine new_gem_com
 
