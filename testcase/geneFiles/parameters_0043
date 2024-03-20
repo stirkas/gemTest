@@ -1,0 +1,146 @@
+&parallelization
+n_procs_s =   2
+n_procs_v =   4
+n_procs_w =  16
+n_procs_x =   1
+n_procs_y =   8
+n_procs_z =   8
+n_procs_sim =   8192
+/
+
+&box
+n_spec =    2
+nx0    =  576
+nky0   =   32
+nz0    =   32
+nv0    =   32
+nw0    =   16
+
+kymin =    2.0200000    
+lv    =   3.00000    
+lw    =   9.00000    
+lx    =   5.91457    
+nexc  = 10
+adapt_lx = F
+/
+
+&in_out
+diagdir = './/////'
+
+read_checkpoint  = F
+write_checkpoint = T
+
+istep_field  =     100
+istep_mom    =     400
+istep_nrg    =      10
+istep_vsp    =     500
+istep_schpt  =    5000
+istep_energy =     100
+
+write_std = T
+/
+
+&general
+nonlinear =   T
+comp_type = 'IV'
+perf_vec  =  2 1 2 1 1 1 2 1 1
+nblocks   =       8
+hypz_compensation =   F
+
+timescheme = 'RK4'
+dt_max     =   0.2620E-03
+dt_vlasov  =   0.2620E-03
+ev_coll    =    61.108    
+courant    =     1.25
+
+timelim    =      71800
+ntimesteps =    1000000
+simtimelim =   0.1000E+05
+
+beta       =   0.10000000E-03
+debye2     =    0.0000000    
+collision_op = 'landau'
+coll         =   0.62354063E-03
+coll_cons_model  = 'self_adj'
+
+init_cond = 'ppj'
+
+hyp_z_with_dz_prefactor = F
+hyp_z =    2.000    
+hyp_v_with_dv_prefactor = F
+hyp_v =   0.2000    
+
+perf_tsteps =  -1
+
+/
+
+&geometry
+magn_geometry = 'circular'
+q0       =    1.4100000    
+shat     =   0.83700000    
+trpeps   =   0.18000000    
+major_R  =    1.0000000    
+dpdx_term= 'gradB_eq_curv'
+dpdx_pm  =    0.0000000    
+norm_flux_projection  = F
+sign_Ip_CW =       1
+sign_Bt_CW =       1
+/
+
+&species
+name   = 'ions'
+omn    =    2.2300000    
+omt    =    6.9600000    
+
+mass   =    1.0000000    
+temp   =    1.0000000    
+dens   =    1.0000000    
+charge =    1.0000000    
+/
+
+&species
+name   = 'electrons'
+omn    =    2.2300000    
+omt    =    6.9600000    
+
+mass   =   0.27244000E-03
+temp   =    1.0000000    
+dens   =    1.0000000    
+charge =   -1.0000000    
+/
+
+&info
+step_time  =     0.2911
+number of computed time steps =  246512
+time for initial value solver =  71754.726
+calc_dt = T
+nltdt_off = F
+ev_coll_est  =    73.706247    
+init_time =    16.0184
+n_fields = 2
+n_moms   =  6
+nrgcols  = 10
+lx =   5.91457    
+ly =   3.11049    
+PRECISION  = DOUBLE
+ENDIANNESS = LITTLE
+OMP_NUM_THREADS =   1
+GIT_BRANCH = de999815a522baddf98f06781b1082e166d368fb                    
+RELEASE = 2.0 - patch 4
+nu_ei =   0.151109
+nustar_i =   0.024495
+nustar_e =   0.034642
+/
+
+&units
+Bref =   2.0000000000000000E+00
+Tref =   2.1400000000000001E+00
+nref =   4.6600000000000001E+00
+Lref =   1.6699999999999999E+00
+mref =   1.9900000000000000E+00
+/
+
+&bsgrid
+is_bsg = F
+/
+
